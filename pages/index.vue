@@ -38,6 +38,7 @@ const g = useTypingGame();
       :per-sec="g.perSec.value"
       :miss="g.miss.value"
       :accuracy="g.accuracy.value"
+      :suspicious="g.suspicious.value"
       @retry="g.start"
       @back="g.phase.value = 'idle'"
     />

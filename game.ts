@@ -25,3 +25,16 @@ export const randomWord = (min: number, max: number, rand = Math.random): string
   const len = min + Math.floor(rand() * (max - min + 1));
   return Array.from({ length: len }, () => Math.floor(rand() * 10)).join("");
 };
+
+/**
+ * Heuristic bot check on keystroke timestamps (ms): inhumanly fast gaps or
+ * metronome-regular timing. ponytail: client-side only, trivially bypassable; needs a server-side score check if rankings are added.
+ */
+export const isSuspicious = (times: number[]): boolean => {
+  const gaps = times.slice(1).map((t, i) => t - times[i]);
+  if (gaps.filter((g) => g < 15).length >= 3) return true;
+  if (gaps.length < 20) return false;
+  const mean = gaps.reduce((a, b) => a + b) / gaps.length;
+  const sd = Math.sqrt(gaps.reduce((a, g) => a + (g - mean) ** 2, 0) / gaps.length);
+  return sd < 2;
+};

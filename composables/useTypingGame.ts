@@ -1,5 +1,5 @@
 import { computed, onMounted, onUnmounted, ref } from "vue";
-import { LEVELS, keyToDigit, normalizeRange, randomWord, type Level } from "../game";
+import { LEVELS, isSuspicious, keyToDigit, normalizeRange, randomWord, type Level } from "../game";
 
 export const LIMIT = 60;
 
@@ -16,6 +16,8 @@ export const useTypingGame = () => {
   const words = ref(0);
   const left = ref(LIMIT);
   const shake = ref(false);
+  let times: number[] = [];
+  const suspicious = ref(false);
   let timer: ReturnType<typeof setInterval> | undefined;
 
   const title = computed(
@@ -33,6 +35,7 @@ export const useTypingGame = () => {
 
   const finish = () => {
     clearInterval(timer);
+    suspicious.value = isSuspicious(times);
     phase.value = "result";
   };
 
@@ -43,6 +46,7 @@ export const useTypingGame = () => {
         : [LEVELS[level.value].min, LEVELS[level.value].max];
     [customMin.value, customMax.value] = range.value;
     typed.value = miss.value = words.value = 0;
+    times = [];
     left.value = LIMIT;
     next();
     phase.value = "play";
@@ -57,6 +61,7 @@ export const useTypingGame = () => {
       return;
     }
     if (e.code === "Escape") return finish();
+    if (!e.isTrusted || e.repeat) return; // synthetic events (scripts) and held keys
     const d = keyToDigit(e.code);
     if (d === null) return;
     if (d !== word.value[pos.value]) {
@@ -66,6 +71,7 @@ export const useTypingGame = () => {
       return;
     }
     typed.value++;
+    times.push(e.timeStamp);
     if (++pos.value === word.value.length) {
       words.value++;
       next();
@@ -79,7 +85,7 @@ export const useTypingGame = () => {
   });
 
   return {
-    level, customMin, customMax, phase, word, pos, typed, miss, words, left, shake,
+    level, customMin, customMax, phase, suspicious, word, pos, typed, miss, words, left, shake,
     title, accuracy, perSec, start,
   };
 };

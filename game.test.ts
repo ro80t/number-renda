@@ -16,3 +16,11 @@ test("game", () => {
   assert.deepEqual(normalizeRange(0, 99), [1, 30]);
   assert.deepEqual(normalizeRange(NaN, NaN), [1, 1]);
 });
+
+import { isSuspicious } from "./game.ts";
+test("isSuspicious", () => {
+  const ts = (n: number, f: (i: number) => number) => Array.from({ length: n }, (_, i) => f(i));
+  assert.equal(isSuspicious(ts(30, (i) => i * 100)), true); // metronome
+  assert.equal(isSuspicious(ts(30, (i) => i * 5)), true); // too fast
+  assert.equal(isSuspicious(ts(30, (i) => i * 200 + (i % 7) * 25)), false); // human-ish
+});
