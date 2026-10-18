@@ -9,7 +9,8 @@
 }
 * { box-sizing: border-box; }
 body { margin: 0; min-height: 100vh; font-family: system-ui, "Hiragino Sans", "Yu Gothic", sans-serif; background: var(--bg); color: var(--fg); }
-main { max-width: 720px; margin: 0 auto; padding: 8vh 16px 48px; text-align: center; }
+.page { min-height: 100vh; display: flex; flex-direction: column; }
+main { flex: 1; width: 100%; max-width: 720px; margin: 0 auto; padding: 6vh 16px 48px; text-align: center; }
 h1 { font-size: 2.2rem; margin: 0 0 4px; }
 .sub { color: var(--dim); margin: 0 0 32px; }
 .levels { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 20px; }
@@ -38,3 +39,11 @@ h1 { font-size: 2.2rem; margin: 0 0 4px; }
 .stat { background: var(--panel); border-radius: 12px; padding: 16px 8px; }
 .stat b { display: block; font-size: 1.8rem; }
 .stat span { color: var(--dim); font-size: .85rem; }
+.site-header, .site-footer { border-color: var(--line); border-style: solid; border-width: 0; color: var(--dim); }
+.site-header { border-bottom-width: 1px; }
+.site-footer { border-top-width: 1px; font-size: .85rem; }
+.site-inner { max-width: 960px; margin: 0 auto; padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.brand { color: var(--fg); font-weight: 700; font-size: 1.1rem; text-decoration: none; }
+.tagline { font-size: .85rem; }
+.site-footer a { color: var(--dim); }
+.site-footer a:hover { color: var(--fg); }
