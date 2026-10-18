@@ -10,5 +10,5 @@
     "allowImportingTsExtensions": true,
     "noEmit": true
   },
-  "include": ["pages", "components", "composables", "*.ts", ".void/**/*"]
+  "include": ["routes", "pages", "components", "composables", "*.ts", ".void/**/*"]
 }
