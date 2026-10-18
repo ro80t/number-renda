@@ -1,43 +1,107 @@
 import { computed, onMounted, onUnmounted, ref } from "vue";
 import { playSound } from "./useSound";
-import { LEVELS, isSuspicious, keyToDigit, normalizeRange, randomWord, type Level } from "../game";
+import {
+  LEVELS, PENALTY, charScore, isSuspicious, keyToDigit, normalizeRange, randomWord, rankOf, wordBonus,
+  type Level,
+} from "../game";
 
-export const LIMIT = 60;
+const BEST_KEY = "number-renda:best";
+const TICK_MS = 100;
+
+const loadBest = (): Record<string, number> => {
+  try {
+    return JSON.parse(localStorage.getItem(BEST_KEY) ?? "{}");
+  } catch {
+    return {};
+  }
+};
 
 export const useTypingGame = () => {
   const level = ref<Level>("beginner");
   const customMin = ref(5);
   const customMax = ref(10);
+  const total = ref(60); // whole-game time limit (s)
+  const wordLimit = ref(10); // per-word time limit (s), 0 = off
   const phase = ref<"idle" | "play" | "result">("idle");
   const range = ref<[number, number]>([5, 10]);
   const word = ref("");
   const pos = ref(0);
   const typed = ref(0);
   const miss = ref(0);
+  const timeouts = ref(0);
   const words = ref(0);
-  const left = ref(LIMIT);
+  const score = ref(0);
+  const combo = ref(0);
+  const maxCombo = ref(0);
+  const totalMs = ref(0);
+  const wordMs = ref(0);
+  const elapsed = ref(1);
+  const best = ref(0);
+  const newRecord = ref(false);
   const shake = ref(false);
-  let times: number[] = [];
   const suspicious = ref(false);
+  let times: number[] = [];
+  let last = 0;
   let timer: ReturnType<typeof setInterval> | undefined;
 
   const title = computed(
     () => `${level.value === "custom" ? "カスタム" : LEVELS[level.value].label} ${range.value[0]}〜${range.value[1]}桁`,
   );
+  const configKey = () => `${range.value.join("-")}|${total.value}|${wordLimit.value}`;
+  const left = computed(() => Math.ceil(totalMs.value / 1000));
+  const totalPct = computed(() => (totalMs.value / (total.value * 1000)) * 100);
+  const wordPct = computed(() => (wordLimit.value ? (wordMs.value / (wordLimit.value * 1000)) * 100 : 100));
+  const wordLeft = computed(() => (Math.max(0, wordMs.value) / 1000).toFixed(1));
   const accuracy = computed(() =>
     typed.value + miss.value ? Math.round((typed.value / (typed.value + miss.value)) * 100) : 0,
   );
-  const perSec = computed(() => (typed.value / LIMIT).toFixed(1));
+  const perSec = computed(() => (typed.value / elapsed.value).toFixed(1));
+  const rank = computed(() => rankOf(score.value / elapsed.value));
 
   const next = () => {
     word.value = randomWord(...range.value);
     pos.value = 0;
+    wordMs.value = wordLimit.value * 1000;
+  };
+
+  const penalize = (points: number) => {
+    score.value = Math.max(0, score.value - points);
+    combo.value = 0;
+    playSound("miss");
+    shake.value = false;
+    requestAnimationFrame(() => (shake.value = true));
   };
 
   const finish = () => {
     clearInterval(timer);
+    elapsed.value = Math.max(1, total.value - totalMs.value / 1000);
     suspicious.value = isSuspicious(times);
+    const prev = loadBest();
+    const old = prev[configKey()] ?? 0;
+    best.value = Math.max(old, suspicious.value ? 0 : score.value);
+    newRecord.value = !suspicious.value && score.value > old;
+    if (newRecord.value) {
+      try {
+        localStorage.setItem(BEST_KEY, JSON.stringify({ ...prev, [configKey()]: score.value }));
+      } catch {}
+    }
     phase.value = "result";
+  };
+
+  const tick = () => {
+    const now = Date.now();
+    const dt = now - last;
+    last = now;
+    totalMs.value -= dt;
+    if (totalMs.value <= 0) {
+      totalMs.value = 0;
+      return finish();
+    }
+    if (wordLimit.value && (wordMs.value -= dt) <= 0) {
+      timeouts.value++;
+      penalize(PENALTY.timeout);
+      next();
+    }
   };
 
   const start = () => {
@@ -46,13 +110,15 @@ export const useTypingGame = () => {
         ? normalizeRange(customMin.value, customMax.value)
         : [LEVELS[level.value].min, LEVELS[level.value].max];
     [customMin.value, customMax.value] = range.value;
-    typed.value = miss.value = words.value = 0;
+    typed.value = miss.value = timeouts.value = words.value = score.value = combo.value = maxCombo.value = 0;
     times = [];
-    left.value = LIMIT;
+    totalMs.value = total.value * 1000;
+    best.value = loadBest()[configKey()] ?? 0;
     next();
     phase.value = "play";
     clearInterval(timer);
-    timer = setInterval(() => --left.value <= 0 && finish(), 1000);
+    last = Date.now();
+    timer = setInterval(tick, TICK_MS);
   };
 
   const onKey = (e: KeyboardEvent) => {
@@ -67,16 +133,17 @@ export const useTypingGame = () => {
     if (d === null) return;
     if (d !== word.value[pos.value]) {
       miss.value++;
-      playSound("miss");
-      shake.value = false;
-      requestAnimationFrame(() => (shake.value = true));
+      penalize(PENALTY.miss);
       return;
     }
     typed.value++;
-    playSound("ok");
     times.push(e.timeStamp);
+    playSound("ok");
+    maxCombo.value = Math.max(maxCombo.value, ++combo.value);
+    score.value += charScore(combo.value);
     if (++pos.value === word.value.length) {
       words.value++;
+      score.value += wordBonus(word.value.length, wordLimit.value ? wordMs.value / (wordLimit.value * 1000) : 1);
       next();
     }
   };
@@ -88,7 +155,8 @@ export const useTypingGame = () => {
   });
 
   return {
-    level, customMin, customMax, phase, suspicious, word, pos, typed, miss, words, left, shake,
-    title, accuracy, perSec, start,
+    level, customMin, customMax, total, wordLimit, phase, word, pos, typed, miss, timeouts, words, score,
+    combo, maxCombo, left, totalPct, wordPct, wordLeft, shake, best, newRecord, suspicious,
+    title, accuracy, perSec, rank, start,
   };
 };

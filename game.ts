@@ -38,3 +38,17 @@ export const isSuspicious = (times: number[]): boolean => {
   const sd = Math.sqrt(gaps.reduce((a, g) => a + (g - mean) ** 2, 0) / gaps.length);
   return sd < 2;
 };
+
+export const TOTAL_OPTIONS = [30, 60, 90, 120] as const;
+/** Per-word time limits in seconds; 0 = no limit. */
+export const WORD_OPTIONS = [0, 5, 8, 10, 15] as const;
+export const PENALTY = { miss: 20, timeout: 30 } as const;
+
+/** Points for a correct digit; the combo (consecutive hits, incl. this one) adds up to +10. */
+export const charScore = (combo: number) => 10 + 2 * Math.min(Math.floor(combo / 10), 5);
+
+/** Bonus for finishing a word; `ratio` is the share of the word's time limit still left (1 when unlimited). */
+export const wordBonus = (len: number, ratio: number) => Math.round(len * 5 * Math.min(1, Math.max(0, ratio)));
+
+/** Rank from points per second of play time. */
+export const rankOf = (perSec: number) => (perSec >= 60 ? "S" : perSec >= 40 ? "A" : perSec >= 20 ? "B" : "C");

@@ -24,3 +24,14 @@ test("isSuspicious", () => {
   assert.equal(isSuspicious(ts(30, (i) => i * 5)), true); // too fast
   assert.equal(isSuspicious(ts(30, (i) => i * 200 + (i % 7) * 25)), false); // human-ish
 });
+
+import { charScore, rankOf, wordBonus } from "./game.ts";
+test("scoring", () => {
+  assert.equal(charScore(1), 10);
+  assert.equal(charScore(10), 12);
+  assert.equal(charScore(500), 20); // capped
+  assert.equal(wordBonus(10, 1), 50);
+  assert.equal(wordBonus(10, 0.5), 25);
+  assert.equal(wordBonus(10, -1), 0);
+  assert.deepEqual([70, 45, 25, 5].map(rankOf), ["S", "A", "B", "C"]);
+});

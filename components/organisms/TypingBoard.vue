@@ -7,15 +7,24 @@ defineProps<{
   word: string;
   pos: number;
   left: number;
-  limit: number;
+  totalPct: number;
+  wordPct: number;
+  wordLeft: string;
+  hasWordLimit: boolean;
+  score: number;
+  combo: number;
   miss: number;
 }>();
 const shake = defineModel<boolean>("shake", { default: false });
 </script>
 
 <template>
-  <ProgressBar :percent="((left - 1) / limit) * 100" />
-  <GameHud :title="title" :left="left" :miss="miss" />
+  <ProgressBar :percent="totalPct" :danger="left <= 10" />
+  <GameHud :title="title" :left="left" :score="score" :combo="combo" :miss="miss" />
+  <div v-if="hasWordLimit" class="word-timer">
+    <ProgressBar :percent="wordPct" :danger="wordPct < 30" />
+    <small>{{ wordLeft }}s</small>
+  </div>
   <p class="word" :class="{ shake }" @animationend="shake = false">
     <span class="done">{{ word.slice(0, pos) }}</span>{{ word.slice(pos) }}
   </p>
