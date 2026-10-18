@@ -6,10 +6,8 @@ import ResultPanel from "../components/organisms/ResultPanel.vue";
 import TypingBoard from "../components/organisms/TypingBoard.vue";
 import GameLayout from "../components/templates/GameLayout.vue";
 import { LIMIT, useTypingGame } from "../composables/useTypingGame";
-import { useSoundSetting } from "../composables/useSound";
 
 const g = useTypingGame();
-const { soundOn, setSound } = useSoundSetting();
 </script>
 
 <template>
@@ -19,7 +17,6 @@ const { soundOn, setSound } = useSoundSetting();
       <LevelSelector v-model:level="g.level.value" v-model:custom-min="g.customMin.value" v-model:custom-max="g.customMax.value" />
       <AppButton @click="g.start">スタート</AppButton>
       <p class="hint">Space / Enter でも開始</p>
-      <label class="setting"><input type="checkbox" :checked="soundOn" @change="setSound(($event.target as HTMLInputElement).checked)" /> 効果音</label>
     </template>
 
     <TypingBoard
