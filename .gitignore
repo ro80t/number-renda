@@ -3,3 +3,4 @@ dist
 .void
 .wrangler
 .dev.vars
+.void-wrangler.jsonc
