@@ -1,4 +1,5 @@
 import { computed, onMounted, onUnmounted, ref } from "vue";
+import { playSound } from "./useSound";
 import { LEVELS, isSuspicious, keyToDigit, normalizeRange, randomWord, type Level } from "../game";
 
 export const LIMIT = 60;
@@ -66,11 +67,13 @@ export const useTypingGame = () => {
     if (d === null) return;
     if (d !== word.value[pos.value]) {
       miss.value++;
+      playSound("miss");
       shake.value = false;
       requestAnimationFrame(() => (shake.value = true));
       return;
     }
     typed.value++;
+    playSound("ok");
     times.push(e.timeStamp);
     if (++pos.value === word.value.length) {
       words.value++;
