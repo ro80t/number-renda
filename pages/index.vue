@@ -27,6 +27,12 @@ const canStart = computed(() => b.players.value.length >= 2);
         <p class="hint">
           {{ canStart ? `${b.players.value.length}人が揃いました。スタートで開始！` : "相手の入室を待っています…（コードを共有）" }}
         </p>
+        <input v-model="b.name.value" class="name" maxlength="12" placeholder="表示名（任意）" />
+        <ul class="players">
+          <li v-for="p in b.players.value" :key="p.id" :class="{ me: p.id === b.me.value }">
+            <b>{{ p.name }}{{ p.id === b.me.value ? "（あなた）" : "" }}</b>
+          </li>
+        </ul>
         <LevelSelector v-model:level="g.level.value" v-model:custom-min="g.customMin.value" v-model:custom-max="g.customMax.value" />
         <GameSettings v-model:total="g.total.value" v-model:word-limit="g.wordLimit.value" />
         <div class="actions">
@@ -63,7 +69,7 @@ const canStart = computed(() => b.players.value.length >= 2);
       <p class="sub">表示された数字を上段キー / テンキーで入力（{{ g.total.value }}秒）</p>
       <LevelSelector v-model:level="g.level.value" v-model:custom-min="g.customMin.value" v-model:custom-max="g.customMax.value" />
       <GameSettings v-model:total="g.total.value" v-model:word-limit="g.wordLimit.value" />
-      <BattlePanel :closed="b.closed.value" @join="b.join" />
+      <BattlePanel v-model:name="b.name.value" :closed="b.closed.value" @join="b.join" />
       <AppButton @click="g.start">スタート</AppButton>
       <p class="hint">Space / Enter でも開始</p>
     </template>

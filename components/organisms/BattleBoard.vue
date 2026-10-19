@@ -29,8 +29,8 @@ const max = computed(() => Math.max(1, ...props.players.map((p) => p.score)));
     <span class="done">{{ word.slice(0, pos) }}</span>{{ word.slice(pos) }}
   </p>
   <ul class="players">
-    <li v-for="(p, i) in players" :key="p.id" :class="{ me: p.id === me, off: !p.online }">
-      <b>{{ p.id === me ? "あなた" : `P${i + 1}` }}</b>
+    <li v-for="p in players" :key="p.id" :class="{ me: p.id === me, off: !p.online }">
+      <b>{{ p.name }}{{ p.id === me ? "（あなた）" : "" }}</b>
       <ProgressBar :percent="(p.score / max) * 100" />
       <span>{{ p.score }}pt ・ {{ p.typed }}打 ・ COMBO {{ p.combo }}</span>
     </li>

@@ -1,6 +1,6 @@
 import * as v from "valibot";
 import { defineRoom } from "void/ws";
-import { key, lobby, start, sync, view, type Battle, type View } from "../../battle";
+import { key, lobby, start, sync, view, type Battle, type Online, type View } from "../../battle";
 import { CUSTOM_LIMIT, TOTAL_OPTIONS, WORD_OPTIONS, normalizeRange } from "../../game";
 
 const MAX_PLAYERS = 4;
@@ -19,6 +19,7 @@ export default defineRoom({
         wordLimit: int(0, Math.max(...WORD_OPTIONS)),
       }),
       v.object({ type: v.literal("key"), digit: v.pipe(v.string(), v.regex(/^\d$/)) }),
+      v.object({ type: v.literal("name"), name: v.pipe(v.string(), v.trim(), v.maxLength(12)) }),
       v.object({ type: v.literal("sync") }), // clients ping when a clock they track has run out
     ]),
     server: v.variant("type", [
@@ -44,21 +45,26 @@ export default defineRoom({
       if (b.phase === "play" || ids.length < 2) return;
       const [min, max] = normalizeRange(e.min, e.max);
       b = start(ids, { min, max, total: e.total, wordLimit: e.wordLimit }, now);
+    } else if (e.type === "name") {
+      ctx.connection.setState({ name: e.name });
+      await publish(ctx, b);
+      return;
     } else if (e.type === "key") key(b, ctx.connection.id, e.digit, now);
     else sync(b, now);
     // ponytail: input is trusted per keypress (no rate limit); add one if a bot player shows up.
     if (JSON.stringify(b) !== before) await publish(ctx, b);
   },
   async onClose(ctx) {
-    const rest = online(ctx).filter((id) => id !== ctx.connection.id);
+    const rest = online(ctx).filter((o) => o.id !== ctx.connection.id);
     await publish(ctx, rest.length ? await load(ctx.storage) : lobby(), rest);
   },
 });
 
-type Ctx = { room: { getConnections(): Iterable<{ id: string }>; broadcast(e: { type: "state"; state: View }): Promise<void> } };
-const online = (ctx: Ctx) => [...ctx.room.getConnections()].map((c) => c.id);
+type Ctx = { room: { getConnections(): Iterable<{ id: string; state: unknown }>; broadcast(e: { type: "state"; state: View }): Promise<void> } };
+const online = (ctx: Ctx): Online[] =>
+  [...ctx.room.getConnections()].map((c) => ({ id: c.id, name: (c.state as { name?: string } | null)?.name ?? "" }));
 const load = async (storage: DurableObjectStorage) => (await storage.get<Battle>(STATE_KEY)) ?? lobby();
-const publish = async (ctx: Ctx & { storage: DurableObjectStorage }, b: Battle, ids = online(ctx)) => {
+const publish = async (ctx: Ctx & { storage: DurableObjectStorage }, b: Battle, ids: Online[] = online(ctx)) => {
   await ctx.storage.put(STATE_KEY, b);
   await ctx.room.broadcast({ type: "state", state: view(b, ids, Date.now()) });
 };

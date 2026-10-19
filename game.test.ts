@@ -41,8 +41,9 @@ import { key, lobby, ranking, start, sync, view } from "./battle.ts";
 test("battle", () => {
   const cfg = { min: 3, max: 3, total: 10, wordLimit: 5 };
   const rand = () => 0; // word "000"
-  const b = start(["a", "b"], cfg, 0, rand);
+  const b = start([{ id: "a", name: "" }, { id: "b", name: "Bob" }], cfg, 0, rand);
   assert.equal(b.word, "000");
+  assert.deepEqual([b.players.a.name, b.players.b.name], ["P1", "Bob"]);
 
   key(b, "a", "0", 100, rand); // a claims the first digit
   key(b, "b", "1", 110, rand); // b misses
@@ -59,8 +60,8 @@ test("battle", () => {
   sync(b, 10000, rand);
   assert.equal(b.phase, "result");
 
-  const r = ranking(view(b, ["a", "b"], 10000).players);
+  const r = ranking(view(b, [{ id: "a", name: "" }, { id: "b", name: "Bob" }], 10000).players);
   assert.equal(r[0].id, "a");
   assert.deepEqual(ranking([{ score: 5 }, { score: 5 }, { score: 1 }]).map((p) => p.place), [1, 1, 3]);
-  assert.equal(view(lobby(), ["x"], 0).players.length, 1);
+  assert.equal(view(lobby(), [{ id: "x", name: "X" }], 0).players.length, 1);
 });

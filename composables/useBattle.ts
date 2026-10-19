@@ -8,6 +8,15 @@ const TICK_MS = 100;
 const SYNC_RETRY_MS = 300;
 
 export const useBattle = () => {
+  const NAME_KEY = "number-renda:name";
+  const loadName = () => {
+    try {
+      return localStorage.getItem(NAME_KEY) ?? "";
+    } catch {
+      return "";
+    }
+  };
+  const name = ref(loadName()); // display name shown to other players
   const room = ref(""); // joined room code, "" = not in a room
   const me = ref("");
   const snap = ref<View | null>(null);
@@ -49,6 +58,15 @@ export const useBattle = () => {
     }
   };
 
+  const sendName = () => {
+    if (!socket || !me.value) return;
+    socket.send({ type: "name", name: name.value });
+    try {
+      localStorage.setItem(NAME_KEY, name.value.trim());
+    } catch {}
+  };
+  watch(name, sendName);
+
   const leave = () => {
     socket?.close();
     socket = undefined;
@@ -62,7 +80,10 @@ export const useBattle = () => {
     room.value = code;
     socket = connect("/battle/:room", { params: { room: code } });
     socket.on("message", (e) => {
-      if (e.type === "you") me.value = e.id;
+      if (e.type === "you") {
+        me.value = e.id;
+        sendName();
+      }
       else {
         snap.value = e.state;
         at.value = Date.now();
@@ -93,5 +114,5 @@ export const useBattle = () => {
     socket?.close();
   });
 
-  return { room, me, phase, snap, totalMs, wordMs, hasWordLimit, players, mine, ranked, closed, shake, join, leave, start };
+  return { name, room, me, phase, snap, totalMs, wordMs, hasWordLimit, players, mine, ranked, closed, shake, join, leave, start };
 };

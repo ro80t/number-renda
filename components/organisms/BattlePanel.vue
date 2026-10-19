@@ -4,6 +4,7 @@ import AppButton from "../atoms/AppButton.vue";
 
 defineProps<{ closed: boolean }>();
 const emit = defineEmits<{ join: [code: string] }>();
+const name = defineModel<string>("name", { required: true });
 const input = ref("");
 const create = () => emit("join", String(Math.floor(Math.random() * 1e6)).padStart(6, "0"));
 const enter = () => /^\d{6}$/.test(input.value) && emit("join", input.value);
@@ -12,6 +13,9 @@ const enter = () => /^\d{6}$/.test(input.value) && emit("join", input.value);
 <template>
   <section class="battle">
     <h2>対戦（最大4人）</h2>
+    <div class="actions">
+      <input v-model="name" class="name" maxlength="12" placeholder="表示名（任意）" />
+    </div>
     <div class="actions">
       <AppButton variant="secondary" @click="create">部屋を作る</AppButton>
     </div>

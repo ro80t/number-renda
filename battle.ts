@@ -3,6 +3,7 @@ import { PENALTY, charScore, randomWord, wordBonus } from "./game.ts";
 /** Server-authoritative race: everyone types the same word; the first correct digit claims the points. */
 export type Config = { min: number; max: number; total: number; wordLimit: number };
 export type Player = {
+  name: string;
   score: number; combo: number; maxCombo: number; typed: number; miss: number; words: number; timeouts: number;
 };
 export type Battle = {
@@ -25,7 +26,9 @@ export type View = {
   players: (Player & { id: string; online: boolean })[];
 };
 
-const fresh = (): Player => ({ score: 0, combo: 0, maxCombo: 0, typed: 0, miss: 0, words: 0, timeouts: 0 });
+/** Connections are named by their display name; blank names fall back to P1, P2, ... */
+export type Online = { id: string; name: string };
+const fresh = (name: string): Player => ({ name, score: 0, combo: 0, maxCombo: 0, typed: 0, miss: 0, words: 0, timeouts: 0 });
 
 export const lobby = (): Battle => ({
   phase: "lobby", cfg: { min: 5, max: 10, total: 60, wordLimit: 0 }, word: "", pos: 0, endAt: 0, wordEndAt: 0, players: {},
@@ -37,10 +40,10 @@ const nextWord = (b: Battle, now: number, rand: () => number) => {
   b.wordEndAt = b.cfg.wordLimit ? now + b.cfg.wordLimit * 1000 : 0;
 };
 
-export const start = (ids: string[], cfg: Config, now: number, rand = Math.random): Battle => {
+export const start = (online: Online[], cfg: Config, now: number, rand = Math.random): Battle => {
   const b: Battle = {
     phase: "play", cfg, word: "", pos: 0, endAt: now + cfg.total * 1000, wordEndAt: 0,
-    players: Object.fromEntries(ids.map((id) => [id, fresh()])),
+    players: Object.fromEntries(online.map(({ id, name }, i) => [id, fresh(name || `P${i + 1}`)])),
   };
   nextWord(b, now, rand);
   return b;
@@ -83,7 +86,7 @@ export const key = (b: Battle, id: string, digit: string, now: number, rand = Ma
   return b;
 };
 
-export const view = (b: Battle, online: string[], now: number): View => ({
+export const view = (b: Battle, online: Online[], now: number): View => ({
   phase: b.phase,
   cfg: b.cfg,
   word: b.word,
@@ -92,8 +95,8 @@ export const view = (b: Battle, online: string[], now: number): View => ({
   wordMs: b.phase === "play" && b.wordEndAt ? Math.max(0, b.wordEndAt - now) : 0,
   players:
     b.phase === "lobby"
-      ? online.map((id) => ({ id, online: true, ...fresh() }))
-      : Object.entries(b.players).map(([id, p]) => ({ id, online: online.includes(id), ...p })),
+      ? online.map(({ id, name }, i) => ({ id, online: true, ...fresh(name || `P${i + 1}`) }))
+      : Object.entries(b.players).map(([id, p]) => ({ id, online: online.some((o) => o.id === id), ...p })),
 });
 
 /** Players by score, highest first, with competition ranking (ties share a place). */
