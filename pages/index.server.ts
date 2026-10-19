@@ -24,6 +24,7 @@ export const head = defineHead((c) => {
     ],
     link: [
       { rel: "canonical", href: url },
+      { rel: "icon", href: "/favicon.ico", sizes: "any" },
       { rel: "icon", href: "/logo.svg", type: "image/svg+xml" },
     ],
     script: [
