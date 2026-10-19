@@ -109,7 +109,10 @@ h1 { font-size: 2.2rem; margin: 0 0 4px; }
 /* hide native number spinners (white on dark); arrow keys still work */
 .number-field { appearance: textfield; -moz-appearance: textfield; color-scheme: dark; }
 .number-field::-webkit-inner-spin-button, .number-field::-webkit-outer-spin-button { appearance: none; margin: 0; }
-.battle { margin: 16px 0; }
+/* a self-contained block: solo / battle / room sections */
+.mode { border: 1px solid var(--line); border-radius: 16px; padding: 20px 16px; margin: 24px 0; }
+.mode > h2 { margin: 0 0 16px; font-size: 1.1rem; }
+.field { display: flex; flex-direction: column; align-items: center; gap: 6px; margin-bottom: 20px; color: var(--dim); font-size: .85rem; }
 .battle input, input.name { width: 8ch; text-align: center; font-size: 1.1rem; background: var(--panel); color: inherit; border: 1px solid var(--line); border-radius: 8px; padding: 6px; }
 .players, .ranking { list-style: none; padding: 0; margin: 16px 0; display: grid; gap: 8px; }
 .players li, .ranking li { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; text-align: left; display: grid; gap: 4px; }

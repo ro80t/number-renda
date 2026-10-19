@@ -11,11 +11,9 @@ const enter = () => /^\d{6}$/.test(input.value) && emit("join", input.value);
 </script>
 
 <template>
-  <section class="battle">
+  <section class="mode battle">
     <h2>対戦（最大4人）</h2>
-    <div class="actions">
-      <input v-model="name" class="name" maxlength="12" placeholder="表示名（任意）" />
-    </div>
+    <label class="field">表示名<input v-model="name" class="name" maxlength="12" placeholder="未入力なら P1, P2…" /></label>
     <div class="actions">
       <AppButton variant="secondary" @click="create">部屋を作る</AppButton>
     </div>
