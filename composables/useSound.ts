@@ -10,13 +10,16 @@ let ctx: AudioContext | undefined;
 
 const beep = (freq: number, ms: number, type: OscillatorType, delay = 0) => {
   ctx ??= new AudioContext();
+
   const o = ctx.createOscillator();
   const g = ctx.createGain();
   const t = ctx.currentTime + delay;
   o.type = type;
   o.frequency.value = freq;
+
   g.gain.setValueAtTime(Math.max(MAX_GAIN * volume.value, 0.0002), t);
   g.gain.exponentialRampToValueAtTime(0.0001, t + ms / 1000);
+
   o.connect(g).connect(ctx.destination);
   o.start(t);
   o.stop(t + ms / 1000);
@@ -24,6 +27,7 @@ const beep = (freq: number, ms: number, type: OscillatorType, delay = 0) => {
 
 export const playSound = (kind: "ok" | "miss" | "done") => {
   if (!enabled.value) return;
+
   try {
     if (kind === "ok") beep(880, 60, "sine");
     else if (kind === "done") {
@@ -44,11 +48,13 @@ export const useSoundSettings = () => {
       if (typeof s.enabled === "boolean") enabled.value = s.enabled;
       if (typeof s.volume === "number") volume.value = Math.min(1, Math.max(0, s.volume));
     } catch {}
+
     watch([enabled, volume], () => {
       try {
         localStorage.setItem(KEY, JSON.stringify({ enabled: enabled.value, volume: volume.value }));
       } catch {}
     });
   });
+
   return { enabled, volume, preview: () => playSound("ok") };
 };

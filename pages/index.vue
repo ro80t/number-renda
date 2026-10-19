@@ -36,8 +36,10 @@ const canStart = computed(() => b.players.value.length >= 2);
               : "相手の入室を待っています…（コードを共有）"
           }}
         </p>
+
         <section class="mode">
           <h2>参加者</h2>
+
           <label class="field"
             >表示名<input
               v-model="b.name.value"
@@ -51,15 +53,19 @@ const canStart = computed(() => b.players.value.length >= 2);
             </li>
           </ul>
         </section>
+
         <section class="mode">
           <h2>ルール</h2>
+
           <LevelSelector
             v-model:level="g.level.value"
             v-model:custom-min="g.customMin.value"
             v-model:custom-max="g.customMax.value"
           />
+
           <GameSettings v-model:total="g.total.value" v-model:word-limit="g.wordLimit.value" />
           <SegmentedControl v-model="b.live.value" label="得点方式" :options="SCORING" />
+
           <p class="hint">
             {{
               b.live.value
@@ -68,6 +74,7 @@ const canStart = computed(() => b.players.value.length >= 2);
             }}
           </p>
         </section>
+
         <div class="actions">
           <AppButton :disabled="!canStart" @click="b.start(g.config())">スタート</AppButton>
           <AppButton variant="secondary" @click="b.leave">退室</AppButton>
@@ -91,6 +98,7 @@ const canStart = computed(() => b.players.value.length >= 2);
       <template v-else>
         <h2>結果</h2>
         <RankingList :me="b.me.value" :ranked="b.ranked.value" />
+
         <div class="actions">
           <AppButton :disabled="!canStart" @click="b.start(g.config())">もう一度</AppButton>
           <AppButton variant="secondary" @click="b.leave">退室</AppButton>
@@ -100,17 +108,21 @@ const canStart = computed(() => b.players.value.length >= 2);
 
     <template v-else-if="g.phase.value === 'idle'">
       <p class="sub">表示された数字を上段キー / テンキーで入力（{{ g.total.value }}秒）</p>
+
       <section class="mode">
         <h2>ひとりで遊ぶ</h2>
+
         <LevelSelector
           v-model:level="g.level.value"
           v-model:custom-min="g.customMin.value"
           v-model:custom-max="g.customMax.value"
         />
+
         <GameSettings v-model:total="g.total.value" v-model:word-limit="g.wordLimit.value" />
         <AppButton @click="g.start">スタート</AppButton>
         <p class="hint">Space / Enter でも開始</p>
       </section>
+
       <BattlePanel v-model:name="b.name.value" :closed="b.closed.value" @join="b.join" />
     </template>
 

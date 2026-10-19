@@ -6,10 +6,12 @@ import AppHeader from "../organisms/AppHeader.vue";
 <template>
   <div class="page">
     <AppHeader />
+
     <main>
       <h1>数字連打</h1>
       <slot />
     </main>
+
     <AppFooter />
   </div>
 </template>

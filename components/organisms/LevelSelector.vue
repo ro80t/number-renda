@@ -18,6 +18,7 @@ const customMax = defineModel<number>("customMax", { required: true });
       :selected="level === key"
       @click="level = key"
     />
+
     <LevelCard
       label="カスタム"
       sub="桁数を指定"
@@ -25,5 +26,6 @@ const customMax = defineModel<number>("customMax", { required: true });
       @click="level = 'custom'"
     />
   </div>
+
   <RangeInput v-if="level === 'custom'" v-model:min="customMin" v-model:max="customMax" />
 </template>

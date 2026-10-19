@@ -18,12 +18,14 @@ export const normalizeRange = (min: number, max: number): [number, number] => {
   const c = (n: number) =>
     Math.min(CUSTOM_LIMIT.max, Math.max(CUSTOM_LIMIT.min, Math.round(n) || CUSTOM_LIMIT.min));
   const lo = c(min);
+
   return [lo, Math.max(lo, c(max))];
 };
 
 /** Random digit string whose length is in [min, max]. */
 export const randomWord = (min: number, max: number, rand = Math.random): string => {
   const len = min + Math.floor(rand() * (max - min + 1));
+
   return Array.from({ length: len }, () => Math.floor(rand() * 10)).join("");
 };
 
@@ -35,14 +37,18 @@ export const isSuspicious = (times: number[]): boolean => {
   const gaps = times.slice(1).map((t, i) => t - times[i]);
   if (gaps.filter((g) => g < 15).length >= 3) return true;
   if (gaps.length < 20) return false;
+
   const mean = gaps.reduce((a, b) => a + b) / gaps.length;
   const sd = Math.sqrt(gaps.reduce((a, g) => a + (g - mean) ** 2, 0) / gaps.length);
+
   return sd < 2;
 };
 
+// Game settings
 export const TOTAL_OPTIONS = [30, 60, 90, 120] as const;
 /** Per-word time limits in seconds; 0 = no limit. */
 export const WORD_OPTIONS = [0, 5, 8, 10, 15] as const;
+
 export const PENALTY = { miss: 20, timeout: 30 } as const;
 
 /** Points for a correct digit; the combo (consecutive hits, incl. this one) adds up to +10. */

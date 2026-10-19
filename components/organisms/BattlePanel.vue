@@ -13,13 +13,16 @@ const enter = () => /^\d{6}$/.test(input.value) && emit("join", input.value);
 <template>
   <section class="mode battle">
     <h2>対戦（最大4人）</h2>
+
     <label class="field"
       >表示名<input v-model="name" class="name" maxlength="12" placeholder="未入力なら P1, P2…"
     /></label>
     <div class="actions">
       <AppButton variant="secondary" @click="create">部屋を作る</AppButton>
     </div>
+
     <p class="hint">または部屋コード（6桁）で入室</p>
+
     <div class="actions">
       <input
         v-model="input"
@@ -28,8 +31,10 @@ const enter = () => /^\d{6}$/.test(input.value) && emit("join", input.value);
         placeholder="000000"
         @keydown.enter.stop="enter"
       />
+
       <AppButton variant="secondary" @click="enter">入室</AppButton>
     </div>
+
     <p v-if="closed" class="hint">入室できませんでした（満室、または対戦中です）</p>
   </section>
 </template>

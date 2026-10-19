@@ -15,9 +15,12 @@ defineExpose({ open: () => dlg.value?.showModal() });
         <h2>設定</h2>
         <button class="icon-btn" aria-label="閉じる">✕</button>
       </header>
+
       <ToggleSwitch v-model="enabled" label="効果音" />
+
       <label class="slider" :class="{ off: !enabled }">
         <span>音量</span>
+
         <input
           v-model.number="volume"
           type="range"

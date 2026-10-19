@@ -9,6 +9,7 @@ const SYNC_RETRY_MS = 300;
 
 export const useBattle = () => {
   const NAME_KEY = "number-renda:name";
+
   const loadName = () => {
     try {
       return localStorage.getItem(NAME_KEY) ?? "";
@@ -16,6 +17,7 @@ export const useBattle = () => {
       return "";
     }
   };
+
   const live = ref(0); // scoring mode picker: 0 = winner takes the pot, 1 = points per digit
   const name = ref(loadName()); // display name shown to other players
   const room = ref(""); // joined room code, "" = not in a room
@@ -25,6 +27,7 @@ export const useBattle = () => {
   const now = ref(Date.now());
   const closed = ref(false); // rejected: full or game in progress
   const shake = ref(false);
+
   let socket: ReturnType<typeof connect<"/battle/:room">> | undefined;
   let timer: ReturnType<typeof setInterval> | undefined;
   let lastSync = 0;
@@ -33,6 +36,7 @@ export const useBattle = () => {
   const totalMs = computed(() => Math.max(0, (snap.value?.totalMs ?? 0) - (now.value - at.value)));
   const wordMs = computed(() => Math.max(0, (snap.value?.wordMs ?? 0) - (now.value - at.value)));
   const hasWordLimit = computed(() => (snap.value?.cfg.wordLimit ?? 0) > 0);
+
   const players = computed(() => snap.value?.players ?? []);
   const mine = computed(() => players.value.find((p) => p.id === me.value));
   const ranked = computed(() => ranking(players.value));
@@ -41,8 +45,10 @@ export const useBattle = () => {
     const a = s?.players.find((p) => p.id === me.value);
     const b = old?.players.find((p) => p.id === me.value);
     if (!a || !b || s?.phase !== "play") return;
+
     if (a.words > b.words) playSound("done"); // finished the word first
     else if (a.typed > b.typed) playSound("ok");
+
     if (a.miss > b.miss || a.timeouts > b.timeouts) {
       playSound("miss");
       shake.value = false;
@@ -52,9 +58,11 @@ export const useBattle = () => {
 
   const tick = () => {
     now.value = Date.now();
+
     // the server has no clock of its own: ask it to apply ours once a deadline has passed
     const over =
       phase.value === "play" && (totalMs.value <= 0 || (hasWordLimit.value && wordMs.value <= 0));
+
     if (over && now.value - lastSync > SYNC_RETRY_MS) {
       lastSync = now.value;
       socket?.send({ type: "sync" });
@@ -64,6 +72,7 @@ export const useBattle = () => {
   const sendName = () => {
     if (!socket || !me.value) return;
     socket.send({ type: "name", name: name.value });
+
     try {
       localStorage.setItem(NAME_KEY, name.value.trim());
     } catch {}
@@ -79,9 +88,11 @@ export const useBattle = () => {
 
   const join = (code: string) => {
     leave();
+
     closed.value = false;
     room.value = code;
     socket = connect("/battle/:room", { params: { room: code } });
+
     socket.on("message", (e) => {
       if (e.type === "you") {
         me.value = e.id;
@@ -91,6 +102,7 @@ export const useBattle = () => {
         at.value = Date.now();
       }
     });
+
     socket.on("close", () => {
       if (room.value !== code || me.value) return;
       leave(); // never got in: stop the auto-reconnect

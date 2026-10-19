@@ -82,12 +82,14 @@ export const start = (online: Online[], cfg: Config, now: number, rand = Math.ra
     players: Object.fromEntries(online.map(({ id, name }, i) => [id, fresh(name || `P${i + 1}`)])),
   };
   nextWord(b, now, rand);
+
   return b;
 };
 
 /** Apply the clock: end the game, or time out the current word for everyone. Mutates `b`. */
 export const sync = (b: Battle, now: number, rand = Math.random): Battle => {
   if (b.phase !== "play") return b;
+
   if (now >= b.endAt) b.phase = "result";
   else if (b.wordEndAt && now >= b.wordEndAt) {
     for (const p of Object.values(b.players)) {
@@ -109,19 +111,24 @@ export const key = (
   rand = Math.random,
 ): Battle => {
   sync(b, now, rand);
+
   const p = b.players[id];
   if (b.phase !== "play" || !p) return b;
+
   if (digit !== b.word[p.pos]) {
     p.miss++;
     p.score = Math.max(0, p.score - PENALTY.miss);
     p.combo = 0;
     return b;
   }
+
   p.typed++;
   p.maxCombo = Math.max(p.maxCombo, ++p.combo);
   if (b.cfg.live) p.score += charScore(p.combo);
   else p.pending += charScore(p.combo);
+
   if (++p.pos < b.word.length) return b;
+
   // first to finish takes the pot
   p.words++;
   p.score += Object.values(b.players).reduce((sum, q) => sum + q.pending, 0);
@@ -130,6 +137,7 @@ export const key = (
     b.cfg.wordLimit ? (b.wordEndAt - now) / (b.cfg.wordLimit * 1000) : 1,
   );
   nextWord(b, now, rand);
+
   return b;
 };
 

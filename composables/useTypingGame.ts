@@ -26,11 +26,14 @@ const loadBest = (): Record<string, number> => {
 
 /** `paused`: a battle owns the keyboard, so solo keys are ignored. */
 export const useTypingGame = (paused: Ref<boolean>) => {
+  // settings
   const level = ref<Level>("beginner");
   const customMin = ref(5);
   const customMax = ref(10);
   const total = ref(60); // whole-game time limit (s)
   const wordLimit = ref(10); // per-word time limit (s), 0 = off
+
+  // game state
   const phase = ref<"idle" | "play" | "result">("idle");
   const range = ref<[number, number]>([5, 10]);
   const word = ref("");
@@ -45,10 +48,13 @@ export const useTypingGame = (paused: Ref<boolean>) => {
   const totalMs = ref(0);
   const wordMs = ref(0);
   const elapsed = ref(1);
+
+  // result / feedback
   const best = ref(0);
   const newRecord = ref(false);
   const shake = ref(false);
   const suspicious = ref(false);
+
   let times: number[] = [];
   let last = 0;
   let timer: ReturnType<typeof setInterval> | undefined;
@@ -57,13 +63,16 @@ export const useTypingGame = (paused: Ref<boolean>) => {
     () =>
       `${level.value === "custom" ? "カスタム" : LEVELS[level.value].label} ${range.value[0]}〜${range.value[1]}桁`,
   );
+
   const configKey = () => `${range.value.join("-")}|${total.value}|${wordLimit.value}`;
+
   const left = computed(() => Math.ceil(totalMs.value / 1000));
   const totalPct = computed(() => (totalMs.value / (total.value * 1000)) * 100);
   const wordPct = computed(() =>
     wordLimit.value ? (wordMs.value / (wordLimit.value * 1000)) * 100 : 100,
   );
   const wordLeft = computed(() => (Math.max(0, wordMs.value) / 1000).toFixed(1));
+
   const accuracy = computed(() =>
     typed.value + miss.value ? Math.round((typed.value / (typed.value + miss.value)) * 100) : 0,
   );
@@ -86,12 +95,15 @@ export const useTypingGame = (paused: Ref<boolean>) => {
 
   const finish = () => {
     clearInterval(timer);
+
     elapsed.value = Math.max(1, total.value - totalMs.value / 1000);
     suspicious.value = isSuspicious(times);
+
     const prev = loadBest();
     const old = prev[configKey()] ?? 0;
     best.value = Math.max(old, suspicious.value ? 0 : score.value);
     newRecord.value = !suspicious.value && score.value > old;
+
     if (newRecord.value) {
       try {
         localStorage.setItem(BEST_KEY, JSON.stringify({ ...prev, [configKey()]: score.value }));
@@ -105,10 +117,12 @@ export const useTypingGame = (paused: Ref<boolean>) => {
     const dt = now - last;
     last = now;
     totalMs.value -= dt;
+
     if (totalMs.value <= 0) {
       totalMs.value = 0;
       return finish();
     }
+
     if (wordLimit.value && (wordMs.value -= dt) <= 0) {
       timeouts.value++;
       penalize(PENALTY.timeout);
@@ -130,6 +144,7 @@ export const useTypingGame = (paused: Ref<boolean>) => {
   const start = () => {
     range.value = localRange();
     [customMin.value, customMax.value] = range.value;
+
     typed.value =
       miss.value =
       timeouts.value =
@@ -139,10 +154,12 @@ export const useTypingGame = (paused: Ref<boolean>) => {
       maxCombo.value =
         0;
     times = [];
+
     totalMs.value = total.value * 1000;
     best.value = loadBest()[configKey()] ?? 0;
     next();
     phase.value = "play";
+
     clearInterval(timer);
     last = Date.now();
     timer = setInterval(tick, TICK_MS);
@@ -150,26 +167,31 @@ export const useTypingGame = (paused: Ref<boolean>) => {
 
   const onKey = (e: KeyboardEvent) => {
     if (paused.value) return;
+
     if (phase.value !== "play") {
       // buttons/inputs handle their own Enter/Space
       if ((e.code === "Space" || e.code === "Enter") && e.target === document.body) start();
       return;
     }
+
     if (e.code === "Escape") return finish();
     if (!e.isTrusted || e.repeat) return; // synthetic events (scripts) and held keys
     const d = keyToDigit(e.code);
     if (d === null) return;
+
     if (d !== word.value[pos.value]) {
       miss.value++;
       penalize(PENALTY.miss);
       return;
     }
+
     typed.value++;
     times.push(e.timeStamp);
     const last = pos.value + 1 === word.value.length;
     playSound(last ? "done" : "ok");
     maxCombo.value = Math.max(maxCombo.value, ++combo.value);
     score.value += charScore(combo.value);
+
     if (++pos.value === word.value.length) {
       words.value++;
       score.value += wordBonus(

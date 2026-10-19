@@ -31,6 +31,7 @@ export default defineRoom({
   },
   async onBeforeConnect(ctx) {
     const b = sync(await load(ctx.storage), Date.now());
+
     if (online(ctx).length >= MAX_PLAYERS || b.phase === "play")
       return new Response("Room is closed", { status: 409 });
   },
@@ -40,8 +41,10 @@ export default defineRoom({
   },
   async onMessage(ctx, e) {
     const now = Date.now();
+
     let b = await load(ctx.storage);
     const before = JSON.stringify(b);
+
     if (e.type === "start") {
       sync(b, now);
       const ids = online(ctx);
@@ -54,6 +57,7 @@ export default defineRoom({
       return;
     } else if (e.type === "key") key(b, ctx.connection.id, e.digit, now);
     else sync(b, now);
+
     // ponytail: input is trusted per keypress (no rate limit); add one if a bot player shows up.
     if (JSON.stringify(b) !== before) await publish(ctx, b);
   },

@@ -6,6 +6,7 @@ const model = defineModel<number>({ required: true });
 <template>
   <div class="seg-row">
     <span class="seg-label">{{ label }}</span>
+
     <div class="seg" role="group" :aria-label="label">
       <button
         v-for="o in options"

@@ -13,6 +13,7 @@ const settings = ref<InstanceType<typeof SettingsDialog>>();
         ><img src="/logo.svg" alt="" width="24" height="24" />数字連打</Link
       >
       <span class="tagline">テンキー・数字タイピング練習</span>
+
       <button class="icon-btn" aria-label="設定" @click="settings?.open()">
         <svg
           width="20"
@@ -31,5 +32,6 @@ const settings = ref<InstanceType<typeof SettingsDialog>>();
       </button>
     </div>
   </header>
+
   <SettingsDialog ref="settings" />
 </template>
