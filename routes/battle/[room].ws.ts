@@ -69,13 +69,16 @@ type Ctx = {
     broadcast(e: { type: "state"; state: View }): Promise<void>;
   };
 };
+
 const online = (ctx: Ctx): Online[] =>
   [...ctx.room.getConnections()].map((c) => ({
     id: c.id,
     name: (c.state as { name?: string } | null)?.name ?? "",
   }));
+
 const load = async (storage: DurableObjectStorage) =>
   (await storage.get<Battle>(STATE_KEY)) ?? lobby();
+
 const publish = async (
   ctx: Ctx & { storage: DurableObjectStorage },
   b: Battle,

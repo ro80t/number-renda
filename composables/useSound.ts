@@ -2,8 +2,10 @@ import { onMounted, ref, watch } from "vue";
 
 const KEY = "number-renda:settings";
 const MAX_GAIN = 0.08; // volume 1.0 is still quiet; default 0.5 -> 0.04
+
 const enabled = ref(true);
 const volume = ref(0.5);
+
 let ctx: AudioContext | undefined;
 
 const beep = (freq: number, ms: number, type: OscillatorType, delay = 0) => {

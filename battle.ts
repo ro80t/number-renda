@@ -5,8 +5,10 @@ import { PENALTY, charScore, randomWord, wordBonus } from "./game.ts";
  * go into a pot; whoever finishes it first takes the whole pot (everyone's `pending`) plus the speed bonus.
  * In `live` mode points are paid per digit instead, and the first finisher only gets the bonus.
  */
+
 /** `live`: digits score immediately; otherwise points sit in the pot and only the first finisher collects. */
 export type Config = { min: number; max: number; total: number; wordLimit: number; live: boolean };
+
 export type Player = {
   name: string;
   pos: number; // progress through the current word
@@ -19,6 +21,7 @@ export type Player = {
   words: number;
   timeouts: number;
 };
+
 export type Battle = {
   phase: "lobby" | "play" | "result";
   cfg: Config;
@@ -27,6 +30,7 @@ export type Battle = {
   wordEndAt: number; // 0 = no per-word limit
   players: Record<string, Player>;
 };
+
 /** What clients receive: relative times, so clock skew between machines doesn't matter. */
 export type View = {
   phase: Battle["phase"];
@@ -39,6 +43,7 @@ export type View = {
 
 /** Connections are named by their display name; blank names fall back to P1, P2, ... */
 export type Online = { id: string; name: string };
+
 const fresh = (name: string): Player => ({
   name,
   pos: 0,
