@@ -20,6 +20,9 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - uses: oven-sh/setup-bun@v2
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
       - run: bun install --frozen-lockfile
       - run: bun run build # generates .void route types needed by typecheck
       - run: bun run typecheck
@@ -36,17 +39,10 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - uses: oven-sh/setup-bun@v2
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
       - run: bun install --frozen-lockfile
-      # TEMP: make void print the cf output it hides in this error; remove after fixing
-      - run: |
-          node -e '
-          const fs = require("fs");
-          const f = "node_modules/@void/deploy-cloudflare/dist/index.mjs";
-          const s = fs.readFileSync(f, "utf8");
-          const a = "before retrying.`);";
-          if (!s.includes(a)) throw new Error("patch target not found");
-          fs.writeFileSync(f, s.replace(a, "before retrying. DEBUG: ${JSON.stringify({ op: operation.type, status: result.status, signal: result.signal, error: result.error, errorCode: result.errorCode, failure: result.failure, stderr: String(result.stderr).slice(0, 2000), stdout: String(result.stdout).slice(0, 500) })}`);"));
-          '
       - run: bunx void deploy --platform cloudflare
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
