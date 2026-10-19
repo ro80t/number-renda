@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import "../styles.css";
+import BattlePanel from "../components/organisms/BattlePanel.vue";
 import AppButton from "../components/atoms/AppButton.vue";
 import GameSettings from "../components/organisms/GameSettings.vue";
 import LevelSelector from "../components/organisms/LevelSelector.vue";
@@ -17,6 +18,7 @@ const g = useTypingGame();
       <p class="sub">表示された数字を上段キー / テンキーで入力（{{ g.total.value }}秒）</p>
       <LevelSelector v-model:level="g.level.value" v-model:custom-min="g.customMin.value" v-model:custom-max="g.customMax.value" />
       <GameSettings v-model:total="g.total.value" v-model:word-limit="g.wordLimit.value" />
+      <BattlePanel :room="g.room.value" :players="g.players.value" :error="g.roomError.value" @join="g.join" @leave="g.leave" />
       <AppButton @click="g.start">スタート</AppButton>
       <p class="hint">Space / Enter でも開始</p>
     </template>
@@ -35,6 +37,7 @@ const g = useTypingGame();
       :score="g.score.value"
       :combo="g.combo.value"
       :miss="g.miss.value"
+      :opp-score="g.room.value ? g.oppScore.value : undefined"
     />
 
     <ResultPanel
@@ -52,6 +55,8 @@ const g = useTypingGame();
       :max-combo="g.maxCombo.value"
       :accuracy="g.accuracy.value"
       :suspicious="g.suspicious.value"
+      :opp-score="g.room.value ? g.oppScore.value : undefined"
+      :opp-done="g.oppDone.value"
       @retry="g.start"
       @back="g.phase.value = 'idle'"
     />

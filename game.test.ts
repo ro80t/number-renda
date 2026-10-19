@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { keyToDigit, normalizeRange, randomWord } from "./game.ts";
+import { keyToDigit, normalizeRange, randomWord, seededRand } from "./game.ts";
 
 test("game", () => {
   assert.equal(keyToDigit("Digit7"), "7");
@@ -11,6 +11,8 @@ test("game", () => {
   for (let i = 0; i < 200; i++) assert.match(randomWord(5, 10), /^\d{5,10}$/);
   assert.equal(randomWord(3, 3).length, 3);
   assert.equal(randomWord(5, 10, () => 0.999).length, 10);
+
+  assert.equal(randomWord(5, 10, seededRand(42)), randomWord(5, 10, seededRand(42)));
 
   assert.deepEqual(normalizeRange(10, 5), [10, 10]);
   assert.deepEqual(normalizeRange(0, 99), [1, 30]);

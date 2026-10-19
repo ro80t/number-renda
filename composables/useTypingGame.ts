@@ -1,7 +1,8 @@
-import { computed, onMounted, onUnmounted, ref } from "vue";
+import { computed, onMounted, onUnmounted, ref, watch } from "vue";
+import { connect } from "void/ws";
 import { playSound } from "./useSound";
 import {
-  LEVELS, PENALTY, charScore, isSuspicious, keyToDigit, normalizeRange, randomWord, rankOf, wordBonus,
+  LEVELS, PENALTY, charScore, isSuspicious, keyToDigit, normalizeRange, randomWord, rankOf, seededRand, wordBonus,
   type Level,
 } from "../game";
 
@@ -40,6 +41,14 @@ export const useTypingGame = () => {
   const newRecord = ref(false);
   const shake = ref(false);
   const suspicious = ref(false);
+  // battle (room) state
+  const room = ref(""); // joined room code, "" = solo
+  const players = ref(0);
+  const oppScore = ref(0);
+  const oppDone = ref(false);
+  const roomError = ref(false);
+  let socket: ReturnType<typeof connect<"/battle/:room">> | undefined;
+  let rand = Math.random;
   let times: number[] = [];
   let last = 0;
   let timer: ReturnType<typeof setInterval> | undefined;
@@ -59,7 +68,7 @@ export const useTypingGame = () => {
   const rank = computed(() => rankOf(score.value / elapsed.value));
 
   const next = () => {
-    word.value = randomWord(...range.value);
+    word.value = randomWord(...range.value, rand);
     pos.value = 0;
     wordMs.value = wordLimit.value * 1000;
   };
@@ -86,6 +95,7 @@ export const useTypingGame = () => {
       } catch {}
     }
     phase.value = "result";
+    socket?.send({ type: "score", score: score.value, done: true });
   };
 
   const tick = () => {
@@ -104,12 +114,17 @@ export const useTypingGame = () => {
     }
   };
 
-  const start = () => {
-    range.value =
-      level.value === "custom"
-        ? normalizeRange(customMin.value, customMax.value)
-        : [LEVELS[level.value].min, LEVELS[level.value].max];
-    [customMin.value, customMax.value] = range.value;
+  const localRange = (): [number, number] =>
+    level.value === "custom"
+      ? normalizeRange(customMin.value, customMax.value)
+      : [LEVELS[level.value].min, LEVELS[level.value].max];
+
+  const begin = (r: [number, number], seed?: number) => {
+    range.value = r;
+    [customMin.value, customMax.value] = r;
+    rand = seed === undefined ? Math.random : seededRand(seed);
+    oppScore.value = 0;
+    oppDone.value = false;
     typed.value = miss.value = timeouts.value = words.value = score.value = combo.value = maxCombo.value = 0;
     times = [];
     totalMs.value = total.value * 1000;
@@ -120,6 +135,46 @@ export const useTypingGame = () => {
     last = Date.now();
     timer = setInterval(tick, TICK_MS);
   };
+
+  /** Solo: start now. In a room: ask the server, which starts both players with a shared seed. */
+  const start = () => {
+    const r = localRange();
+    if (!room.value) return begin(r);
+    if (players.value < 2) return;
+    socket?.send({ type: "start", min: r[0], max: r[1], total: total.value, wordLimit: wordLimit.value });
+  };
+
+  const leave = () => {
+    socket?.close();
+    socket = undefined;
+    room.value = "";
+    players.value = 0;
+  };
+
+  const join = (code: string) => {
+    leave();
+    roomError.value = false;
+    room.value = code;
+    socket = connect("/battle/:room", { params: { room: code } });
+    socket.on("message", (e) => {
+      if (e.type === "players") {
+        players.value = e.count;
+        if (e.count < 2 && phase.value === "play") oppDone.value = true; // opponent left
+      } else if (e.type === "start") {
+        total.value = e.total;
+        wordLimit.value = e.wordLimit;
+        begin([e.min, e.max], e.seed);
+      } else {
+        oppScore.value = e.score;
+        oppDone.value = e.done;
+      }
+    });
+    socket.on("close", () => {
+      if (room.value === code && !players.value) roomError.value = true; // rejected (full) before joining
+    });
+  };
+
+  watch(score, (v) => phase.value === "play" && socket?.send({ type: "score", score: v, done: false }));
 
   const onKey = (e: KeyboardEvent) => {
     if (phase.value !== "play") {
@@ -150,6 +205,7 @@ export const useTypingGame = () => {
 
   onMounted(() => addEventListener("keydown", onKey));
   onUnmounted(() => {
+    socket?.close();
     removeEventListener("keydown", onKey);
     clearInterval(timer);
   });
@@ -158,5 +214,6 @@ export const useTypingGame = () => {
     level, customMin, customMax, total, wordLimit, phase, word, pos, typed, miss, timeouts, words, score,
     combo, maxCombo, left, totalPct, wordPct, wordLeft, shake, best, newRecord, suspicious,
     title, accuracy, perSec, rank, start,
+    room, players, oppScore, oppDone, roomError, join, leave,
   };
 };

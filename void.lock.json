@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "source": {
+    "name": "number-renda"
+  },
+  "resolved": {
+    "name": "number-renda",
+    "durable_objects": {
+      "bindings": [
+        {
+          "name": "BattleRoomWs",
+          "class_name": "BattleRoomWs"
+        }
+      ]
+    },
+    "migrations": [
+      {
+        "tag": "void-ws-v1",
+        "new_sqlite_classes": [
+          "BattleRoomWs"
+        ]
+      }
+    ]
+  },
+  "text": "{\n  \"name\": \"number-renda\",\n  \"durable_objects\": {\n    \"bindings\": [\n      {\n        \"name\": \"BattleRoomWs\",\n        \"class_name\": \"BattleRoomWs\"\n      }\n    ]\n  },\n  \"migrations\": [\n    {\n      \"tag\": \"void-ws-v1\",\n      \"new_sqlite_classes\": [\n        \"BattleRoomWs\"\n      ]\n    }\n  ]\n}\n"
+}
