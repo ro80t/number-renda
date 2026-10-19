@@ -3,6 +3,7 @@ export const keyToDigit = (code: string): string | null =>
   /^(Digit|Numpad)\d$/.test(code) ? code.slice(-1) : null;
 
 export const LEVELS = {
+  intro: { label: "入門", min: 1, max: 5 },
   beginner: { label: "初級", min: 5, max: 10 },
   intermediate: { label: "中級", min: 10, max: 15 },
   advanced: { label: "上級", min: 15, max: 20 },
