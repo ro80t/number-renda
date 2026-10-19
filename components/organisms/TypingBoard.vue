@@ -14,7 +14,6 @@ defineProps<{
   score: number;
   combo: number;
   miss: number;
-  oppScore?: number;
 }>();
 const shake = defineModel<boolean>("shake", { default: false });
 </script>
@@ -22,7 +21,6 @@ const shake = defineModel<boolean>("shake", { default: false });
 <template>
   <ProgressBar :percent="totalPct" :danger="left <= 10" />
   <GameHud :title="title" :left="left" :score="score" :combo="combo" :miss="miss" />
-  <p v-if="oppScore !== undefined" class="hint">相手 SCORE: {{ oppScore }}</p>
   <div v-if="hasWordLimit" class="word-timer">
     <ProgressBar :percent="wordPct" :danger="wordPct < 30" />
     <small>{{ wordLeft }}s</small>

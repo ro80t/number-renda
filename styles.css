@@ -111,3 +111,10 @@ h1 { font-size: 2.2rem; margin: 0 0 4px; }
 .number-field::-webkit-inner-spin-button, .number-field::-webkit-outer-spin-button { appearance: none; margin: 0; }
 .battle { margin: 16px 0; }
 .battle input { width: 8ch; text-align: center; font-size: 1.1rem; background: var(--panel); color: inherit; border: 1px solid var(--line); border-radius: 8px; padding: 6px; }
+.players, .ranking { list-style: none; padding: 0; margin: 16px 0; display: grid; gap: 8px; }
+.players li, .ranking li { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; text-align: left; display: grid; gap: 4px; }
+.players li.me, .ranking li.me { border-color: var(--accent); }
+.players li.off { opacity: .5; }
+.players span, .ranking small { color: var(--dim); font-size: .8rem; }
+.ranking .place { color: var(--accent); font-size: 1.2rem; }
+.btn:disabled { opacity: .4; cursor: not-allowed; }

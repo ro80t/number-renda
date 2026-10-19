@@ -20,14 +20,6 @@ export const normalizeRange = (min: number, max: number): [number, number] => {
   return [lo, Math.max(lo, c(max))];
 };
 
-/** Deterministic PRNG (mulberry32) so both players in a battle get the same words. */
-export const seededRand = (seed: number) => () => {
-  seed = (seed + 0x6d2b79f5) | 0;
-  let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
-  t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-  return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-};
-
 /** Random digit string whose length is in [min, max]. */
 export const randomWord = (min: number, max: number, rand = Math.random): string => {
   const len = min + Math.floor(rand() * (max - min + 1));

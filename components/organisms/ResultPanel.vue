@@ -16,8 +16,6 @@ defineProps<{
   maxCombo: number;
   accuracy: number;
   suspicious: boolean;
-  oppScore?: number;
-  oppDone?: boolean;
 }>();
 defineEmits<{ retry: []; back: [] }>();
 </script>
@@ -25,10 +23,6 @@ defineEmits<{ retry: []; back: [] }>();
 <template>
   <h2>結果（{{ title }}）</h2>
   <p v-if="suspicious" class="hint">不自然な入力間隔が検出されたため、この結果は無効です。</p>
-  <h2 v-if="oppScore !== undefined">
-    {{ !oppDone ? "相手の終了待ち…" : score > oppScore ? "勝ち！" : score < oppScore ? "負け…" : "引き分け" }}
-    （相手 {{ oppScore }}）
-  </h2>
   <div class="score-card">
     <div class="rank" :data-rank="rank">{{ rank }}</div>
     <div>

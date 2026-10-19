@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { keyToDigit, normalizeRange, randomWord, seededRand } from "./game.ts";
+import { keyToDigit, normalizeRange, randomWord } from "./game.ts";
 
 test("game", () => {
   assert.equal(keyToDigit("Digit7"), "7");
@@ -11,8 +11,6 @@ test("game", () => {
   for (let i = 0; i < 200; i++) assert.match(randomWord(5, 10), /^\d{5,10}$/);
   assert.equal(randomWord(3, 3).length, 3);
   assert.equal(randomWord(5, 10, () => 0.999).length, 10);
-
-  assert.equal(randomWord(5, 10, seededRand(42)), randomWord(5, 10, seededRand(42)));
 
   assert.deepEqual(normalizeRange(10, 5), [10, 10]);
   assert.deepEqual(normalizeRange(0, 99), [1, 30]);
@@ -36,4 +34,33 @@ test("scoring", () => {
   assert.equal(wordBonus(10, 0.5), 25);
   assert.equal(wordBonus(10, -1), 0);
   assert.deepEqual([70, 45, 25, 5].map(rankOf), ["S", "A", "B", "C"]);
+});
+
+import { key, lobby, ranking, start, sync, view } from "./battle.ts";
+
+test("battle", () => {
+  const cfg = { min: 3, max: 3, total: 10, wordLimit: 5 };
+  const rand = () => 0; // word "000"
+  const b = start(["a", "b"], cfg, 0, rand);
+  assert.equal(b.word, "000");
+
+  key(b, "a", "0", 100, rand); // a claims the first digit
+  key(b, "b", "1", 110, rand); // b misses
+  key(b, "b", "0", 120, rand); // b claims the second
+  assert.deepEqual([b.pos, b.players.a.typed, b.players.b.typed, b.players.b.miss], [2, 1, 1, 1]);
+
+  key(b, "a", "0", 130, rand); // a finishes the word: bonus, next word
+  assert.equal(b.pos, 0);
+  assert.equal(b.players.a.words, 1);
+  assert.ok(b.players.a.score > b.players.b.score);
+
+  sync(b, 6000, rand); // word timed out for everyone
+  assert.equal(b.players.a.timeouts, 1);
+  sync(b, 10000, rand);
+  assert.equal(b.phase, "result");
+
+  const r = ranking(view(b, ["a", "b"], 10000).players);
+  assert.equal(r[0].id, "a");
+  assert.deepEqual(ranking([{ score: 5 }, { score: 5 }, { score: 1 }]).map((p) => p.place), [1, 1, 3]);
+  assert.equal(view(lobby(), ["x"], 0).players.length, 1);
 });
