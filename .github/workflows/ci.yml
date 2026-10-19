@@ -44,6 +44,12 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           CLOUDFLARE_AUTH_USE_KEYRING: "true"
           CF_DELEGATION: "1"
+      - run: node node_modules/cf/bin/cf workers versions get 1a4b3fde-1000-4bc6-82a1-7abe73456731 --worker-id number-renda || true
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_AUTH_USE_KEYRING: "true"
+          CF_DELEGATION: "1"
       - run: bunx void deploy --platform cloudflare
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
