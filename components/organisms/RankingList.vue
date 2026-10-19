@@ -10,7 +10,9 @@ defineProps<{ me: string; ranked: (Player & { id: string; place: number })[] }>(
       <b class="place">{{ p.place }}位</b>
       <span>{{ p.name }}{{ p.id === me ? "（あなた）" : "" }}</span>
       <strong>{{ p.score }}pt</strong>
-      <small>{{ p.typed }}打 / 完答{{ p.words }} / ミス{{ p.miss }} / 最大COMBO {{ p.maxCombo }}</small>
+      <small
+        >{{ p.typed }}打 / 完答{{ p.words }} / ミス{{ p.miss }} / 最大COMBO {{ p.maxCombo }}</small
+      >
     </li>
   </ol>
 </template>

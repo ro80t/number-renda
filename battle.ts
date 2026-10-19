@@ -11,7 +11,13 @@ export type Player = {
   name: string;
   pos: number; // progress through the current word
   pending: number; // points earned on the current word, up for grabs
-  score: number; combo: number; maxCombo: number; typed: number; miss: number; words: number; timeouts: number;
+  score: number;
+  combo: number;
+  maxCombo: number;
+  typed: number;
+  miss: number;
+  words: number;
+  timeouts: number;
 };
 export type Battle = {
   phase: "lobby" | "play" | "result";
@@ -33,10 +39,26 @@ export type View = {
 
 /** Connections are named by their display name; blank names fall back to P1, P2, ... */
 export type Online = { id: string; name: string };
-const fresh = (name: string): Player => ({ name, pos: 0, pending: 0, score: 0, combo: 0, maxCombo: 0, typed: 0, miss: 0, words: 0, timeouts: 0 });
+const fresh = (name: string): Player => ({
+  name,
+  pos: 0,
+  pending: 0,
+  score: 0,
+  combo: 0,
+  maxCombo: 0,
+  typed: 0,
+  miss: 0,
+  words: 0,
+  timeouts: 0,
+});
 
 export const lobby = (): Battle => ({
-  phase: "lobby", cfg: { min: 5, max: 10, total: 60, wordLimit: 0, live: false }, word: "", endAt: 0, wordEndAt: 0, players: {},
+  phase: "lobby",
+  cfg: { min: 5, max: 10, total: 60, wordLimit: 0, live: false },
+  word: "",
+  endAt: 0,
+  wordEndAt: 0,
+  players: {},
 });
 
 const nextWord = (b: Battle, now: number, rand: () => number) => {
@@ -47,7 +69,11 @@ const nextWord = (b: Battle, now: number, rand: () => number) => {
 
 export const start = (online: Online[], cfg: Config, now: number, rand = Math.random): Battle => {
   const b: Battle = {
-    phase: "play", cfg, word: "", endAt: now + cfg.total * 1000, wordEndAt: 0,
+    phase: "play",
+    cfg,
+    word: "",
+    endAt: now + cfg.total * 1000,
+    wordEndAt: 0,
     players: Object.fromEntries(online.map(({ id, name }, i) => [id, fresh(name || `P${i + 1}`)])),
   };
   nextWord(b, now, rand);
@@ -70,7 +96,13 @@ export const sync = (b: Battle, now: number, rand = Math.random): Battle => {
 };
 
 /** A player pressed `digit`. Mutates `b`. */
-export const key = (b: Battle, id: string, digit: string, now: number, rand = Math.random): Battle => {
+export const key = (
+  b: Battle,
+  id: string,
+  digit: string,
+  now: number,
+  rand = Math.random,
+): Battle => {
   sync(b, now, rand);
   const p = b.players[id];
   if (b.phase !== "play" || !p) return b;
@@ -88,7 +120,10 @@ export const key = (b: Battle, id: string, digit: string, now: number, rand = Ma
   // first to finish takes the pot
   p.words++;
   p.score += Object.values(b.players).reduce((sum, q) => sum + q.pending, 0);
-  p.score += wordBonus(b.word.length, b.cfg.wordLimit ? (b.wordEndAt - now) / (b.cfg.wordLimit * 1000) : 1);
+  p.score += wordBonus(
+    b.word.length,
+    b.cfg.wordLimit ? (b.wordEndAt - now) / (b.cfg.wordLimit * 1000) : 1,
+  );
   nextWord(b, now, rand);
   return b;
 };
@@ -102,11 +137,15 @@ export const view = (b: Battle, online: Online[], now: number): View => ({
   players:
     b.phase === "lobby"
       ? online.map(({ id, name }, i) => ({ id, online: true, ...fresh(name || `P${i + 1}`) }))
-      : Object.entries(b.players).map(([id, p]) => ({ id, online: online.some((o) => o.id === id), ...p })),
+      : Object.entries(b.players).map(([id, p]) => ({
+          id,
+          online: online.some((o) => o.id === id),
+          ...p,
+        })),
 });
 
 /** Players by score, highest first, with competition ranking (ties share a place). */
 export const ranking = <T extends { score: number }>(players: T[]): (T & { place: number })[] => {
   const sorted = [...players].sort((a, b) => b.score - a.score);
-  return sorted.map((p, i) => ({ ...p, place: sorted.findIndex((q) => q.score === p.score) + 1 }));
+  return sorted.map((p) => ({ ...p, place: sorted.findIndex((q) => q.score === p.score) + 1 }));
 };

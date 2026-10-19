@@ -7,7 +7,13 @@ const model = defineModel<number>({ required: true });
   <div class="seg-row">
     <span class="seg-label">{{ label }}</span>
     <div class="seg" role="group" :aria-label="label">
-      <button v-for="o in options" :key="o.value" type="button" :aria-pressed="model === o.value" @click="model = o.value">
+      <button
+        v-for="o in options"
+        :key="o.value"
+        type="button"
+        :aria-pressed="model === o.value"
+        @click="model = o.value"
+      >
         {{ o.label }}
       </button>
     </div>

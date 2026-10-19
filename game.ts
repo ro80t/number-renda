@@ -49,7 +49,9 @@ export const PENALTY = { miss: 20, timeout: 30 } as const;
 export const charScore = (combo: number) => 10 + 2 * Math.min(Math.floor(combo / 10), 5);
 
 /** Bonus for finishing a word; `ratio` is the share of the word's time limit still left (1 when unlimited). */
-export const wordBonus = (len: number, ratio: number) => Math.round(len * 5 * Math.min(1, Math.max(0, ratio)));
+export const wordBonus = (len: number, ratio: number) =>
+  Math.round(len * 5 * Math.min(1, Math.max(0, ratio)));
 
 /** Rank from points per second of play time. */
-export const rankOf = (perSec: number) => (perSec >= 60 ? "S" : perSec >= 40 ? "A" : perSec >= 20 ? "B" : "C");
+export const rankOf = (perSec: number) =>
+  perSec >= 60 ? "S" : perSec >= 40 ? "A" : perSec >= 20 ? "B" : "C";

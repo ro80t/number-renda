@@ -4,6 +4,7 @@ defineProps<{ label: string; sub: string; selected: boolean }>();
 
 <template>
   <button class="level" :aria-pressed="selected">
-    <b>{{ label }}</b><span>{{ sub }}</span>
+    <b>{{ label }}</b
+    ><span>{{ sub }}</span>
   </button>
 </template>

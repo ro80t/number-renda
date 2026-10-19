@@ -18,7 +18,15 @@ defineExpose({ open: () => dlg.value?.showModal() });
       <ToggleSwitch v-model="enabled" label="効果音" />
       <label class="slider" :class="{ off: !enabled }">
         <span>音量</span>
-        <input v-model.number="volume" type="range" min="0" max="1" step="0.05" :disabled="!enabled" @change="preview" />
+        <input
+          v-model.number="volume"
+          type="range"
+          min="0"
+          max="1"
+          step="0.05"
+          :disabled="!enabled"
+          @change="preview"
+        />
       </label>
     </form>
   </dialog>

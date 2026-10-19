@@ -1,7 +1,15 @@
 import { computed, onMounted, onUnmounted, ref, type Ref } from "vue";
 import { playSound } from "./useSound";
 import {
-  LEVELS, PENALTY, charScore, isSuspicious, keyToDigit, normalizeRange, randomWord, rankOf, wordBonus,
+  LEVELS,
+  PENALTY,
+  charScore,
+  isSuspicious,
+  keyToDigit,
+  normalizeRange,
+  randomWord,
+  rankOf,
+  wordBonus,
   type Level,
 } from "../game";
 
@@ -46,12 +54,15 @@ export const useTypingGame = (paused: Ref<boolean>) => {
   let timer: ReturnType<typeof setInterval> | undefined;
 
   const title = computed(
-    () => `${level.value === "custom" ? "カスタム" : LEVELS[level.value].label} ${range.value[0]}〜${range.value[1]}桁`,
+    () =>
+      `${level.value === "custom" ? "カスタム" : LEVELS[level.value].label} ${range.value[0]}〜${range.value[1]}桁`,
   );
   const configKey = () => `${range.value.join("-")}|${total.value}|${wordLimit.value}`;
   const left = computed(() => Math.ceil(totalMs.value / 1000));
   const totalPct = computed(() => (totalMs.value / (total.value * 1000)) * 100);
-  const wordPct = computed(() => (wordLimit.value ? (wordMs.value / (wordLimit.value * 1000)) * 100 : 100));
+  const wordPct = computed(() =>
+    wordLimit.value ? (wordMs.value / (wordLimit.value * 1000)) * 100 : 100,
+  );
   const wordLeft = computed(() => (Math.max(0, wordMs.value) / 1000).toFixed(1));
   const accuracy = computed(() =>
     typed.value + miss.value ? Math.round((typed.value / (typed.value + miss.value)) * 100) : 0,
@@ -119,7 +130,14 @@ export const useTypingGame = (paused: Ref<boolean>) => {
   const start = () => {
     range.value = localRange();
     [customMin.value, customMax.value] = range.value;
-    typed.value = miss.value = timeouts.value = words.value = score.value = combo.value = maxCombo.value = 0;
+    typed.value =
+      miss.value =
+      timeouts.value =
+      words.value =
+      score.value =
+      combo.value =
+      maxCombo.value =
+        0;
     times = [];
     totalMs.value = total.value * 1000;
     best.value = loadBest()[configKey()] ?? 0;
@@ -154,7 +172,10 @@ export const useTypingGame = (paused: Ref<boolean>) => {
     score.value += charScore(combo.value);
     if (++pos.value === word.value.length) {
       words.value++;
-      score.value += wordBonus(word.value.length, wordLimit.value ? wordMs.value / (wordLimit.value * 1000) : 1);
+      score.value += wordBonus(
+        word.value.length,
+        wordLimit.value ? wordMs.value / (wordLimit.value * 1000) : 1,
+      );
       next();
     }
   };
@@ -166,8 +187,34 @@ export const useTypingGame = (paused: Ref<boolean>) => {
   });
 
   return {
-    level, customMin, customMax, total, wordLimit, phase, word, pos, typed, miss, timeouts, words, score,
-    combo, maxCombo, left, totalPct, wordPct, wordLeft, shake, best, newRecord, suspicious,
-    title, accuracy, perSec, rank, start, config,
+    level,
+    customMin,
+    customMax,
+    total,
+    wordLimit,
+    phase,
+    word,
+    pos,
+    typed,
+    miss,
+    timeouts,
+    words,
+    score,
+    combo,
+    maxCombo,
+    left,
+    totalPct,
+    wordPct,
+    wordLeft,
+    shake,
+    best,
+    newRecord,
+    suspicious,
+    title,
+    accuracy,
+    perSec,
+    rank,
+    start,
+    config,
   };
 };

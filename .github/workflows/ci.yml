@@ -24,6 +24,8 @@ jobs:
         with:
           node-version: 24
       - run: bun install --frozen-lockfile
+      - run: bun run lint
+      - run: bun run format:check
       - run: bun run build # generates .void route types needed by typecheck
       - run: bun run typecheck
       - run: bun run test

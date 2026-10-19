@@ -24,11 +24,14 @@ const shake = defineModel<boolean>("shake", { default: false });
     <small>{{ (wordMs / 1000).toFixed(1) }}s</small>
   </div>
   <p class="word" :class="{ shake }" @animationend="shake = false">
-    <span class="done">{{ word.slice(0, pos) }}</span>{{ word.slice(pos) }}
+    <span class="done">{{ word.slice(0, pos) }}</span
+    >{{ word.slice(pos) }}
   </p>
   <ul class="players">
     <li v-for="p in players" :key="p.id" :class="{ me: p.id === me, off: !p.online }">
-      <b>{{ p.name }}{{ p.id === me ? "（あなた）" : "" }} <em>{{ p.score }}pt</em></b>
+      <b
+        >{{ p.name }}{{ p.id === me ? "（あなた）" : "" }} <em>{{ p.score }}pt</em></b
+      >
       <ProgressBar :percent="(p.pos / word.length) * 100" />
       <span>{{ p.pos }} / {{ word.length }}桁 ・ {{ p.typed }}打 ・ COMBO {{ p.combo }}</span>
     </li>

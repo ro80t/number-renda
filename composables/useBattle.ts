@@ -53,7 +53,8 @@ export const useBattle = () => {
   const tick = () => {
     now.value = Date.now();
     // the server has no clock of its own: ask it to apply ours once a deadline has passed
-    const over = phase.value === "play" && (totalMs.value <= 0 || (hasWordLimit.value && wordMs.value <= 0));
+    const over =
+      phase.value === "play" && (totalMs.value <= 0 || (hasWordLimit.value && wordMs.value <= 0));
     if (over && now.value - lastSync > SYNC_RETRY_MS) {
       lastSync = now.value;
       socket?.send({ type: "sync" });
@@ -85,8 +86,7 @@ export const useBattle = () => {
       if (e.type === "you") {
         me.value = e.id;
         sendName();
-      }
-      else {
+      } else {
         snap.value = e.state;
         at.value = Date.now();
       }
@@ -98,7 +98,8 @@ export const useBattle = () => {
     });
   };
 
-  const start = (cfg: Omit<Config, "live">) => socket?.send({ type: "start", ...cfg, live: live.value === 1 });
+  const start = (cfg: Omit<Config, "live">) =>
+    socket?.send({ type: "start", ...cfg, live: live.value === 1 });
 
   const onKey = (e: KeyboardEvent) => {
     if (phase.value !== "play" || !e.isTrusted || e.repeat) return;
@@ -116,5 +117,23 @@ export const useBattle = () => {
     socket?.close();
   });
 
-  return { live, name, room, me, phase, snap, totalMs, wordMs, hasWordLimit, players, mine, ranked, closed, shake, join, leave, start };
+  return {
+    live,
+    name,
+    room,
+    me,
+    phase,
+    snap,
+    totalMs,
+    wordMs,
+    hasWordLimit,
+    players,
+    mine,
+    ranked,
+    closed,
+    shake,
+    join,
+    leave,
+    start,
+  };
 };

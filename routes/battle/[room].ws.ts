@@ -6,7 +6,8 @@ import { CUSTOM_LIMIT, TOTAL_OPTIONS, WORD_OPTIONS, normalizeRange } from "../..
 const MAX_PLAYERS = 4;
 const STATE_KEY = "battle";
 
-const int = (min: number, max: number) => v.pipe(v.number(), v.integer(), v.minValue(min), v.maxValue(max));
+const int = (min: number, max: number) =>
+  v.pipe(v.number(), v.integer(), v.minValue(min), v.maxValue(max));
 
 export default defineRoom({
   messages: {
@@ -30,7 +31,8 @@ export default defineRoom({
   },
   async onBeforeConnect(ctx) {
     const b = sync(await load(ctx.storage), Date.now());
-    if (online(ctx).length >= MAX_PLAYERS || b.phase === "play") return new Response("Room is closed", { status: 409 });
+    if (online(ctx).length >= MAX_PLAYERS || b.phase === "play")
+      return new Response("Room is closed", { status: 409 });
   },
   async onConnect(ctx) {
     await ctx.connection.send({ type: "you", id: ctx.connection.id });
@@ -61,11 +63,24 @@ export default defineRoom({
   },
 });
 
-type Ctx = { room: { getConnections(): Iterable<{ id: string; state: unknown }>; broadcast(e: { type: "state"; state: View }): Promise<void> } };
+type Ctx = {
+  room: {
+    getConnections(): Iterable<{ id: string; state: unknown }>;
+    broadcast(e: { type: "state"; state: View }): Promise<void>;
+  };
+};
 const online = (ctx: Ctx): Online[] =>
-  [...ctx.room.getConnections()].map((c) => ({ id: c.id, name: (c.state as { name?: string } | null)?.name ?? "" }));
-const load = async (storage: DurableObjectStorage) => (await storage.get<Battle>(STATE_KEY)) ?? lobby();
-const publish = async (ctx: Ctx & { storage: DurableObjectStorage }, b: Battle, ids: Online[] = online(ctx)) => {
+  [...ctx.room.getConnections()].map((c) => ({
+    id: c.id,
+    name: (c.state as { name?: string } | null)?.name ?? "",
+  }));
+const load = async (storage: DurableObjectStorage) =>
+  (await storage.get<Battle>(STATE_KEY)) ?? lobby();
+const publish = async (
+  ctx: Ctx & { storage: DurableObjectStorage },
+  b: Battle,
+  ids: Online[] = online(ctx),
+) => {
   await ctx.storage.put(STATE_KEY, b);
   await ctx.room.broadcast({ type: "state", state: view(b, ids, Date.now()) });
 };

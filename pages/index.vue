@@ -30,11 +30,21 @@ const canStart = computed(() => b.players.value.length >= 2);
 
       <template v-if="b.phase.value === 'lobby'">
         <p class="hint">
-          {{ canStart ? `${b.players.value.length}人が揃いました。スタートで開始！` : "相手の入室を待っています…（コードを共有）" }}
+          {{
+            canStart
+              ? `${b.players.value.length}人が揃いました。スタートで開始！`
+              : "相手の入室を待っています…（コードを共有）"
+          }}
         </p>
         <section class="mode">
           <h2>参加者</h2>
-          <label class="field">表示名<input v-model="b.name.value" class="name" maxlength="12" placeholder="未入力なら P1, P2…" /></label>
+          <label class="field"
+            >表示名<input
+              v-model="b.name.value"
+              class="name"
+              maxlength="12"
+              placeholder="未入力なら P1, P2…"
+          /></label>
           <ul class="players">
             <li v-for="p in b.players.value" :key="p.id" :class="{ me: p.id === b.me.value }">
               <b>{{ p.name }}{{ p.id === b.me.value ? "（あなた）" : "" }}</b>
@@ -43,10 +53,20 @@ const canStart = computed(() => b.players.value.length >= 2);
         </section>
         <section class="mode">
           <h2>ルール</h2>
-          <LevelSelector v-model:level="g.level.value" v-model:custom-min="g.customMin.value" v-model:custom-max="g.customMax.value" />
+          <LevelSelector
+            v-model:level="g.level.value"
+            v-model:custom-min="g.customMin.value"
+            v-model:custom-max="g.customMax.value"
+          />
           <GameSettings v-model:total="g.total.value" v-model:word-limit="g.wordLimit.value" />
           <SegmentedControl v-model="b.live.value" label="得点方式" :options="SCORING" />
-          <p class="hint">{{ b.live.value ? "打った数字ごとに加点。先に打ち終えるとボーナス" : "先に打ち終えた人が、全員のその単語のポイントを総取り" }}</p>
+          <p class="hint">
+            {{
+              b.live.value
+                ? "打った数字ごとに加点。先に打ち終えるとボーナス"
+                : "先に打ち終えた人が、全員のその単語のポイントを総取り"
+            }}
+          </p>
         </section>
         <div class="actions">
           <AppButton :disabled="!canStart" @click="b.start(g.config())">スタート</AppButton>
@@ -82,7 +102,11 @@ const canStart = computed(() => b.players.value.length >= 2);
       <p class="sub">表示された数字を上段キー / テンキーで入力（{{ g.total.value }}秒）</p>
       <section class="mode">
         <h2>ひとりで遊ぶ</h2>
-        <LevelSelector v-model:level="g.level.value" v-model:custom-min="g.customMin.value" v-model:custom-max="g.customMax.value" />
+        <LevelSelector
+          v-model:level="g.level.value"
+          v-model:custom-min="g.customMin.value"
+          v-model:custom-max="g.customMax.value"
+        />
         <GameSettings v-model:total="g.total.value" v-model:word-limit="g.wordLimit.value" />
         <AppButton @click="g.start">スタート</AppButton>
         <p class="hint">Space / Enter でも開始</p>

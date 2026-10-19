@@ -26,7 +26,8 @@ const shake = defineModel<boolean>("shake", { default: false });
     <small>{{ wordLeft }}s</small>
   </div>
   <p class="word" :class="{ shake }" @animationend="shake = false">
-    <span class="done">{{ word.slice(0, pos) }}</span>{{ word.slice(pos) }}
+    <span class="done">{{ word.slice(0, pos) }}</span
+    >{{ word.slice(pos) }}
   </p>
   <p class="hint">Esc で終了</p>
 </template>

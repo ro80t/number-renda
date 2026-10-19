@@ -1,0 +1,4 @@
+{
+  "printWidth": 100,
+  "ignorePatterns": ["dist", ".void", ".wrangler", "bun.lock", "void.lock.json", "public"]
+}
