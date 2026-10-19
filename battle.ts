@@ -3,8 +3,10 @@ import { PENALTY, charScore, randomWord, wordBonus } from "./game.ts";
 /**
  * Server-authoritative race: everyone types the same word at their own pace. Points earned on the word
  * go into a pot; whoever finishes it first takes the whole pot (everyone's `pending`) plus the speed bonus.
+ * In `live` mode points are paid per digit instead, and the first finisher only gets the bonus.
  */
-export type Config = { min: number; max: number; total: number; wordLimit: number };
+/** `live`: digits score immediately; otherwise points sit in the pot and only the first finisher collects. */
+export type Config = { min: number; max: number; total: number; wordLimit: number; live: boolean };
 export type Player = {
   name: string;
   pos: number; // progress through the current word
@@ -34,7 +36,7 @@ export type Online = { id: string; name: string };
 const fresh = (name: string): Player => ({ name, pos: 0, pending: 0, score: 0, combo: 0, maxCombo: 0, typed: 0, miss: 0, words: 0, timeouts: 0 });
 
 export const lobby = (): Battle => ({
-  phase: "lobby", cfg: { min: 5, max: 10, total: 60, wordLimit: 0 }, word: "", endAt: 0, wordEndAt: 0, players: {},
+  phase: "lobby", cfg: { min: 5, max: 10, total: 60, wordLimit: 0, live: false }, word: "", endAt: 0, wordEndAt: 0, players: {},
 });
 
 const nextWord = (b: Battle, now: number, rand: () => number) => {
@@ -80,7 +82,8 @@ export const key = (b: Battle, id: string, digit: string, now: number, rand = Ma
   }
   p.typed++;
   p.maxCombo = Math.max(p.maxCombo, ++p.combo);
-  p.pending += charScore(p.combo);
+  if (b.cfg.live) p.score += charScore(p.combo);
+  else p.pending += charScore(p.combo);
   if (++p.pos < b.word.length) return b;
   // first to finish takes the pot
   p.words++;

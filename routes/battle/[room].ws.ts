@@ -17,6 +17,7 @@ export default defineRoom({
         max: int(CUSTOM_LIMIT.min, CUSTOM_LIMIT.max),
         total: int(1, Math.max(...TOTAL_OPTIONS)),
         wordLimit: int(0, Math.max(...WORD_OPTIONS)),
+        live: v.boolean(),
       }),
       v.object({ type: v.literal("key"), digit: v.pipe(v.string(), v.regex(/^\d$/)) }),
       v.object({ type: v.literal("name"), name: v.pipe(v.string(), v.trim(), v.maxLength(12)) }),
@@ -44,7 +45,7 @@ export default defineRoom({
       const ids = online(ctx);
       if (b.phase === "play" || ids.length < 2) return;
       const [min, max] = normalizeRange(e.min, e.max);
-      b = start(ids, { min, max, total: e.total, wordLimit: e.wordLimit }, now);
+      b = start(ids, { min, max, total: e.total, wordLimit: e.wordLimit, live: e.live }, now);
     } else if (e.type === "name") {
       ctx.connection.setState({ name: e.name });
       await publish(ctx, b);

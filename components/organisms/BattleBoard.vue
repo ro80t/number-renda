@@ -33,5 +33,5 @@ const shake = defineModel<boolean>("shake", { default: false });
       <span>{{ p.pos }} / {{ word.length }}桁 ・ {{ p.typed }}打 ・ COMBO {{ p.combo }}</span>
     </li>
   </ul>
-  <p class="hint">先に打ち終えた人が、その単語のポイントを総取り！</p>
+  <p class="hint">先に打ち終えた人が有利！</p>
 </template>

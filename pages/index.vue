@@ -8,11 +8,16 @@ import LevelSelector from "../components/organisms/LevelSelector.vue";
 import ResultPanel from "../components/organisms/ResultPanel.vue";
 import TypingBoard from "../components/organisms/TypingBoard.vue";
 import GameLayout from "../components/templates/GameLayout.vue";
+import SegmentedControl from "../components/molecules/SegmentedControl.vue";
 import BattleBoard from "../components/organisms/BattleBoard.vue";
 import RankingList from "../components/organisms/RankingList.vue";
 import { useBattle } from "../composables/useBattle";
 import { useTypingGame } from "../composables/useTypingGame";
 
+const SCORING = [
+  { value: 0, label: "総取り" },
+  { value: 1, label: "都度加算" },
+];
 const b = useBattle();
 const g = useTypingGame(computed(() => b.room.value !== ""));
 const canStart = computed(() => b.players.value.length >= 2);
@@ -40,6 +45,8 @@ const canStart = computed(() => b.players.value.length >= 2);
           <h2>ルール</h2>
           <LevelSelector v-model:level="g.level.value" v-model:custom-min="g.customMin.value" v-model:custom-max="g.customMax.value" />
           <GameSettings v-model:total="g.total.value" v-model:word-limit="g.wordLimit.value" />
+          <SegmentedControl v-model="b.live.value" label="得点方式" :options="SCORING" />
+          <p class="hint">{{ b.live.value ? "打った数字ごとに加点。先に打ち終えるとボーナス" : "先に打ち終えた人が、全員のその単語のポイントを総取り" }}</p>
         </section>
         <div class="actions">
           <AppButton :disabled="!canStart" @click="b.start(g.config())">スタート</AppButton>

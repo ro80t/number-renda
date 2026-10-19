@@ -16,6 +16,7 @@ export const useBattle = () => {
       return "";
     }
   };
+  const live = ref(0); // scoring mode picker: 0 = winner takes the pot, 1 = points per digit
   const name = ref(loadName()); // display name shown to other players
   const room = ref(""); // joined room code, "" = not in a room
   const me = ref("");
@@ -96,7 +97,7 @@ export const useBattle = () => {
     });
   };
 
-  const start = (cfg: Config) => socket?.send({ type: "start", ...cfg });
+  const start = (cfg: Omit<Config, "live">) => socket?.send({ type: "start", ...cfg, live: live.value === 1 });
 
   const onKey = (e: KeyboardEvent) => {
     if (phase.value !== "play" || !e.isTrusted || e.repeat) return;
@@ -114,5 +115,5 @@ export const useBattle = () => {
     socket?.close();
   });
 
-  return { name, room, me, phase, snap, totalMs, wordMs, hasWordLimit, players, mine, ranked, closed, shake, join, leave, start };
+  return { live, name, room, me, phase, snap, totalMs, wordMs, hasWordLimit, players, mine, ranked, closed, shake, join, leave, start };
 };
