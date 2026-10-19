@@ -18,11 +18,11 @@
     "vue": "^3.5.43"
   },
   "devDependencies": {
-    "@types/node": "^22.20.3",
+    "@types/node": "^26.6.5",
     "@vitejs/plugin-vue": "^6.0.9",
     "oxfmt": "^0.73.0",
     "oxlint": "^1.88.0",
-    "typescript": "^5.6.0",
+    "typescript": "^7.0.2",
     "vite": "^8.3.1",
     "void": "^1.1.11"
   }
