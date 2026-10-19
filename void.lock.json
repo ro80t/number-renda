@@ -20,7 +20,8 @@
           "BattleRoomWs"
         ]
       }
-    ]
+    ],
+    "account_id": "48a798b92397c930c494065863bed40e"
   },
-  "text": "{\n  \"name\": \"number-renda\",\n  \"durable_objects\": {\n    \"bindings\": [\n      {\n        \"name\": \"BattleRoomWs\",\n        \"class_name\": \"BattleRoomWs\"\n      }\n    ]\n  },\n  \"migrations\": [\n    {\n      \"tag\": \"void-ws-v1\",\n      \"new_sqlite_classes\": [\n        \"BattleRoomWs\"\n      ]\n    }\n  ]\n}\n"
+  "text": "{\n  \"name\": \"number-renda\",\n  \"durable_objects\": {\n    \"bindings\": [\n      {\n        \"name\": \"BattleRoomWs\",\n        \"class_name\": \"BattleRoomWs\"\n      }\n    ]\n  },\n  \"migrations\": [\n    {\n      \"tag\": \"void-ws-v1\",\n      \"new_sqlite_classes\": [\n        \"BattleRoomWs\"\n      ]\n    }\n  ],\n  \"account_id\": \"48a798b92397c930c494065863bed40e\"\n}\n"
 }
