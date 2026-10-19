@@ -41,7 +41,8 @@ export const useBattle = () => {
     const a = s?.players.find((p) => p.id === me.value);
     const b = old?.players.find((p) => p.id === me.value);
     if (!a || !b || s?.phase !== "play") return;
-    if (a.typed > b.typed) playSound("ok");
+    if (a.words > b.words) playSound("done"); // finished the word first
+    else if (a.typed > b.typed) playSound("ok");
     if (a.miss > b.miss || a.timeouts > b.timeouts) {
       playSound("miss");
       shake.value = false;

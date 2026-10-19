@@ -148,7 +148,8 @@ export const useTypingGame = (paused: Ref<boolean>) => {
     }
     typed.value++;
     times.push(e.timeStamp);
-    playSound("ok");
+    const last = pos.value + 1 === word.value.length;
+    playSound(last ? "done" : "ok");
     maxCombo.value = Math.max(maxCombo.value, ++combo.value);
     score.value += charScore(combo.value);
     if (++pos.value === word.value.length) {

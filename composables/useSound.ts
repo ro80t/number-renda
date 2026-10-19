@@ -6,11 +6,11 @@ const enabled = ref(true);
 const volume = ref(0.5);
 let ctx: AudioContext | undefined;
 
-const beep = (freq: number, ms: number, type: OscillatorType) => {
+const beep = (freq: number, ms: number, type: OscillatorType, delay = 0) => {
   ctx ??= new AudioContext();
   const o = ctx.createOscillator();
   const g = ctx.createGain();
-  const t = ctx.currentTime;
+  const t = ctx.currentTime + delay;
   o.type = type;
   o.frequency.value = freq;
   g.gain.setValueAtTime(Math.max(MAX_GAIN * volume.value, 0.0002), t);
@@ -20,11 +20,15 @@ const beep = (freq: number, ms: number, type: OscillatorType) => {
   o.stop(t + ms / 1000);
 };
 
-export const playSound = (kind: "ok" | "miss") => {
+export const playSound = (kind: "ok" | "miss" | "done") => {
   if (!enabled.value) return;
   try {
     if (kind === "ok") beep(880, 60, "sine");
-    else beep(160, 140, "triangle");
+    else if (kind === "done") {
+      // rising two-note chime: the whole word is typed
+      beep(1047, 90, "sine");
+      beep(1568, 160, "sine", 0.09);
+    } else beep(160, 140, "triangle");
   } catch {
     // audio unavailable: stay silent
   }
