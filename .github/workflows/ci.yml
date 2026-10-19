@@ -37,19 +37,16 @@ jobs:
       - uses: actions/checkout@v7
       - uses: oven-sh/setup-bun@v2
       - run: bun install --frozen-lockfile
-      # TEMP: reproduce the cf call void makes, to surface the hidden error; remove after fixing
-      - run: node node_modules/cf/bin/cf workers deployments list --worker number-renda || true
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          CLOUDFLARE_AUTH_USE_KEYRING: "true"
-          CF_DELEGATION: "1"
-      - run: node node_modules/cf/bin/cf workers versions get 1a4b3fde-1000-4bc6-82a1-7abe73456731 --worker-id number-renda || true
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          CLOUDFLARE_AUTH_USE_KEYRING: "true"
-          CF_DELEGATION: "1"
+      # TEMP: make void print the cf output it hides in this error; remove after fixing
+      - run: |
+          node -e '
+          const fs = require("fs");
+          const f = "node_modules/@void/deploy-cloudflare/dist/index.mjs";
+          const s = fs.readFileSync(f, "utf8");
+          const a = "before retrying.`);";
+          if (!s.includes(a)) throw new Error("patch target not found");
+          fs.writeFileSync(f, s.replace(a, "before retrying. DEBUG: ${JSON.stringify({ op: operation.type, status: result.status, signal: result.signal, error: result.error, errorCode: result.errorCode, failure: result.failure, stderr: String(result.stderr).slice(0, 2000), stdout: String(result.stdout).slice(0, 500) })}`);"));
+          '
       - run: bunx void deploy --platform cloudflare
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
