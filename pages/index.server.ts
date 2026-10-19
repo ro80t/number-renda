@@ -22,7 +22,10 @@ export const head = defineHead((c) => {
       { name: "twitter:title", content: TITLE },
       { name: "twitter:description", content: DESC },
     ],
-    link: [{ rel: "canonical", href: url }],
+    link: [
+      { rel: "canonical", href: url },
+      { rel: "icon", href: "/logo.svg", type: "image/svg+xml" },
+    ],
     script: [
       {
         type: "application/ld+json",

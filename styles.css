@@ -122,3 +122,4 @@ h1 { font-size: 2.2rem; margin: 0 0 4px; }
 .ranking .place { color: var(--accent); font-size: 1.2rem; }
 .btn:disabled { opacity: .4; cursor: not-allowed; }
 input.name { width: 16ch; }
+.brand { display: inline-flex; align-items: center; gap: 8px; }
