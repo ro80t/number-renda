@@ -1,16 +1,20 @@
 import { PENALTY, charScore, randomWord, wordBonus } from "./game.ts";
 
-/** Server-authoritative race: everyone types the same word; the first correct digit claims the points. */
+/**
+ * Server-authoritative race: everyone types the same word at their own pace. Points earned on the word
+ * go into a pot; whoever finishes it first takes the whole pot (everyone's `pending`) plus the speed bonus.
+ */
 export type Config = { min: number; max: number; total: number; wordLimit: number };
 export type Player = {
   name: string;
+  pos: number; // progress through the current word
+  pending: number; // points earned on the current word, up for grabs
   score: number; combo: number; maxCombo: number; typed: number; miss: number; words: number; timeouts: number;
 };
 export type Battle = {
   phase: "lobby" | "play" | "result";
   cfg: Config;
   word: string;
-  pos: number;
   endAt: number;
   wordEndAt: number; // 0 = no per-word limit
   players: Record<string, Player>;
@@ -20,7 +24,6 @@ export type View = {
   phase: Battle["phase"];
   cfg: Config;
   word: string;
-  pos: number;
   totalMs: number;
   wordMs: number;
   players: (Player & { id: string; online: boolean })[];
@@ -28,21 +31,21 @@ export type View = {
 
 /** Connections are named by their display name; blank names fall back to P1, P2, ... */
 export type Online = { id: string; name: string };
-const fresh = (name: string): Player => ({ name, score: 0, combo: 0, maxCombo: 0, typed: 0, miss: 0, words: 0, timeouts: 0 });
+const fresh = (name: string): Player => ({ name, pos: 0, pending: 0, score: 0, combo: 0, maxCombo: 0, typed: 0, miss: 0, words: 0, timeouts: 0 });
 
 export const lobby = (): Battle => ({
-  phase: "lobby", cfg: { min: 5, max: 10, total: 60, wordLimit: 0 }, word: "", pos: 0, endAt: 0, wordEndAt: 0, players: {},
+  phase: "lobby", cfg: { min: 5, max: 10, total: 60, wordLimit: 0 }, word: "", endAt: 0, wordEndAt: 0, players: {},
 });
 
 const nextWord = (b: Battle, now: number, rand: () => number) => {
   b.word = randomWord(b.cfg.min, b.cfg.max, rand);
-  b.pos = 0;
+  for (const p of Object.values(b.players)) p.pos = p.pending = 0;
   b.wordEndAt = b.cfg.wordLimit ? now + b.cfg.wordLimit * 1000 : 0;
 };
 
 export const start = (online: Online[], cfg: Config, now: number, rand = Math.random): Battle => {
   const b: Battle = {
-    phase: "play", cfg, word: "", pos: 0, endAt: now + cfg.total * 1000, wordEndAt: 0,
+    phase: "play", cfg, word: "", endAt: now + cfg.total * 1000, wordEndAt: 0,
     players: Object.fromEntries(online.map(({ id, name }, i) => [id, fresh(name || `P${i + 1}`)])),
   };
   nextWord(b, now, rand);
@@ -69,7 +72,7 @@ export const key = (b: Battle, id: string, digit: string, now: number, rand = Ma
   sync(b, now, rand);
   const p = b.players[id];
   if (b.phase !== "play" || !p) return b;
-  if (digit !== b.word[b.pos]) {
+  if (digit !== b.word[p.pos]) {
     p.miss++;
     p.score = Math.max(0, p.score - PENALTY.miss);
     p.combo = 0;
@@ -77,12 +80,13 @@ export const key = (b: Battle, id: string, digit: string, now: number, rand = Ma
   }
   p.typed++;
   p.maxCombo = Math.max(p.maxCombo, ++p.combo);
-  p.score += charScore(p.combo);
-  if (++b.pos === b.word.length) {
-    p.words++; // finishing the word earns the bonus
-    p.score += wordBonus(b.word.length, b.cfg.wordLimit ? (b.wordEndAt - now) / (b.cfg.wordLimit * 1000) : 1);
-    nextWord(b, now, rand);
-  }
+  p.pending += charScore(p.combo);
+  if (++p.pos < b.word.length) return b;
+  // first to finish takes the pot
+  p.words++;
+  p.score += Object.values(b.players).reduce((sum, q) => sum + q.pending, 0);
+  p.score += wordBonus(b.word.length, b.cfg.wordLimit ? (b.wordEndAt - now) / (b.cfg.wordLimit * 1000) : 1);
+  nextWord(b, now, rand);
   return b;
 };
 
@@ -90,7 +94,6 @@ export const view = (b: Battle, online: Online[], now: number): View => ({
   phase: b.phase,
   cfg: b.cfg,
   word: b.word,
-  pos: b.pos,
   totalMs: b.phase === "play" ? Math.max(0, b.endAt - now) : 0,
   wordMs: b.phase === "play" && b.wordEndAt ? Math.max(0, b.wordEndAt - now) : 0,
   players:

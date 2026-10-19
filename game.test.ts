@@ -45,15 +45,16 @@ test("battle", () => {
   assert.equal(b.word, "000");
   assert.deepEqual([b.players.a.name, b.players.b.name], ["P1", "Bob"]);
 
-  key(b, "a", "0", 100, rand); // a claims the first digit
-  key(b, "b", "1", 110, rand); // b misses
-  key(b, "b", "0", 120, rand); // b claims the second
-  assert.deepEqual([b.pos, b.players.a.typed, b.players.b.typed, b.players.b.miss], [2, 1, 1, 1]);
+  key(b, "a", "0", 100, rand);
+  key(b, "b", "1", 110, rand); // b misses: no progress
+  key(b, "b", "0", 120, rand);
+  assert.deepEqual([b.players.a.pos, b.players.b.pos, b.players.b.miss, b.players.a.score], [1, 1, 1, 0]);
 
-  key(b, "a", "0", 130, rand); // a finishes the word: bonus, next word
-  assert.equal(b.pos, 0);
+  key(b, "a", "0", 130, rand);
+  key(b, "a", "0", 140, rand); // a finishes first: takes the pot (own 30 + b's 10) and the bonus
   assert.equal(b.players.a.words, 1);
-  assert.ok(b.players.a.score > b.players.b.score);
+  assert.ok(b.players.a.score >= 40 && b.players.b.score === 0);
+  assert.deepEqual([b.players.a.pos, b.players.b.pos, b.players.b.pending], [0, 0, 0]);
 
   sync(b, 6000, rand); // word timed out for everyone
   assert.equal(b.players.a.timeouts, 1);

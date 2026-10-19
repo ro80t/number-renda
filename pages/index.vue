@@ -51,7 +51,7 @@ const canStart = computed(() => b.players.value.length >= 2);
         v-else-if="b.phase.value === 'play'"
         v-model:shake="b.shake.value"
         :word="b.snap.value!.word"
-        :pos="b.snap.value!.pos"
+        :pos="b.mine.value?.pos ?? 0"
         :total-ms="b.totalMs.value"
         :total-pct="(b.totalMs.value / (b.snap.value!.cfg.total * 1000)) * 100"
         :word-ms="b.wordMs.value"
